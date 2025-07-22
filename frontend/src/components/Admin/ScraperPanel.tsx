@@ -10,15 +10,15 @@ interface ScrapingResult {
   timestamp: string;
 }
 
-interface ContentSource {
-  id: string;
-  name: string;
-  type: string;
-  enabled: boolean;
-  lastChecked?: string;
-  itemsFound: number;
-  successRate: number;
-}
+// interface ContentSource {
+//   id: string;
+//   name: string;
+//   type: string;
+//   enabled: boolean;
+//   lastChecked?: string;
+//   itemsFound: number;
+//   successRate: number;
+// }
 
 const ScraperPanel: React.FC = () => {
   const [stats, setStats] = useState<ScraperStats | null>(null);
@@ -32,7 +32,7 @@ const ScraperPanel: React.FC = () => {
   // WebSocket hook for real-time updates
   const {
     isConnected,
-    stats: wsStats,
+    stats: wsStats, // eslint-disable-line @typescript-eslint/no-unused-vars
     recentDiscoveries: wsDiscoveries,
     connectToScraper,
     disconnectFromScraper

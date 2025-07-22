@@ -22,7 +22,7 @@ function App() {
     source: string;
   }) => {
     try {
-      const response = await fetch('http://localhost:3001/api/admin/content/upload', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/content/upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useScraperWebSocket } from '../../hooks/useScraperWebSocket';
 import { ScraperStats } from '../../types';
+import { apiRequest } from '../../utils/api';
 
 interface ScrapingResult {
   title: string;
@@ -73,7 +74,7 @@ const ScraperPanel: React.FC = () => {
 
   const loadScraperStats = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/scraper/status');
+      const response = await apiRequest('/api/scraper/status');
       if (response.ok) {
         const data = await response.json();
         setStats(data.data);
@@ -86,7 +87,7 @@ const ScraperPanel: React.FC = () => {
   const startManualScraping = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/scraper/start', {
+      const response = await apiRequest('/api/scraper/start', {
         method: 'POST',
       });
       
@@ -111,7 +112,7 @@ const ScraperPanel: React.FC = () => {
 
   const toggleTarget = async (name: string, enabled: boolean) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/scraper/targets/${encodeURIComponent(name)}`, {
+      const response = await apiRequest(`/api/scraper/targets/${encodeURIComponent(name)}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

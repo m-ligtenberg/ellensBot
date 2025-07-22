@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { ScraperStats, ContentDiscovery } from '../types';
+import { getWebSocketUrl } from '../utils/api';
 
 interface UseScraperWebSocketReturn {
   isConnected: boolean;
@@ -24,7 +25,7 @@ export const useScraperWebSocket = (
 
     console.log('🔗 Connecting to scraper WebSocket...');
     
-    const socket = io('http://localhost:3001', {
+    const socket = io(getWebSocketUrl(), {
       transports: ['websocket', 'polling']
     });
 

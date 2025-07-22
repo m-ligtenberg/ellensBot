@@ -14,6 +14,10 @@ export interface ScrapedContent {
     platform?: string;
     views?: number;
     date?: string;
+    error?: boolean;
+    reason?: string;
+    extractedFrom?: string;
+    contentLength?: number;
   };
 }
 
@@ -150,11 +154,12 @@ export class WebScraperService {
           await this.delay(2000);
           
         } catch (error) {
-          console.error(`❌ Failed to scrape ${target.name}:`, error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          console.error(`❌ Failed to scrape ${target.name}:`, errorMessage);
           // Create a placeholder result to show the attempt was made
           results.push({
             title: `Scraping attempted: ${target.name}`,
-            content: `Failed to scrape from ${target.name}: ${error.message}`,
+            content: `Failed to scrape from ${target.name}: ${errorMessage}`,
             source: target.name,
             url: target.baseUrl,
             type: target.type,
@@ -162,7 +167,7 @@ export class WebScraperService {
             metadata: { 
               error: true,
               platform: target.name,
-              reason: error.message.substring(0, 100)
+              reason: errorMessage.substring(0, 100)
             }
           });
         }
@@ -486,14 +491,16 @@ export class WebScraperService {
       return results;
       
     } catch (error) {
-      if (error.code === 'ENOTFOUND') {
+      const err = error as any; // Cast to any to access properties
+      if (err.code === 'ENOTFOUND') {
         throw new Error(`DNS resolution failed for ${target.baseUrl}`);
-      } else if (error.code === 'ETIMEDOUT') {
+      } else if (err.code === 'ETIMEDOUT') {
         throw new Error(`Connection timeout to ${target.baseUrl}`);
-      } else if (error.response) {
-        throw new Error(`HTTP ${error.response.status}: ${error.response.statusText}`);
+      } else if (err.response) {
+        throw new Error(`HTTP ${err.response.status}: ${err.response.statusText}`);
       } else {
-        throw new Error(error.message || 'Unknown scraping error');
+        const message = err.message || (error instanceof Error ? error.message : 'Unknown scraping error');
+        throw new Error(message);
       }
     }
   }

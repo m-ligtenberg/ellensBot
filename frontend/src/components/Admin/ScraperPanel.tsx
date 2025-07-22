@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useScraperWebSocket } from '../../hooks/useScraperWebSocket';
-import { ScraperStats, ScrapingTarget, ContentDiscovery } from '../../types';
+import { ScraperStats } from '../../types';
 
 interface ScrapingResult {
   title: string;
@@ -26,8 +26,8 @@ const ScraperPanel: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'targets' | 'advanced' | 'schedule' | 'manual'>('overview');
   const [advancedContent, setAdvancedContent] = useState<any[]>([]);
-  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
-  const [recentDiscoveries, setRecentDiscoveries] = useState<any[]>([]);
+  // const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
+  // const [recentDiscoveries, setRecentDiscoveries] = useState<any[]>([]);
 
   // WebSocket hook for real-time updates
   const {
@@ -39,10 +39,10 @@ const ScraperPanel: React.FC = () => {
   } = useScraperWebSocket(
     (newStats) => {
       setStats(newStats);
-      setIsWebSocketConnected(true);
+      // setIsWebSocketConnected(true);
     },
     (discovery) => {
-      setRecentDiscoveries(prev => [discovery, ...prev.slice(0, 9)]);
+      // setRecentDiscoveries(prev => [discovery, ...prev.slice(0, 9)]);
     }
   );
   
@@ -319,20 +319,20 @@ const ScraperPanel: React.FC = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-gray-700 p-4 rounded">
                 <h4 className="text-sm font-semibold text-gray-400">Total Targets</h4>
-                <p className="text-2xl font-bold text-white">{stats.totalTargets}</p>
+                <p className="text-2xl font-bold text-white">{stats.basic.totalTargets}</p>
               </div>
               <div className="bg-gray-700 p-4 rounded">
                 <h4 className="text-sm font-semibold text-gray-400">Active Targets</h4>
-                <p className="text-2xl font-bold text-green-400">{stats.enabledTargets}</p>
+                <p className="text-2xl font-bold text-green-400">{stats.basic.enabledTargets}</p>
               </div>
               <div className="bg-gray-700 p-4 rounded">
                 <h4 className="text-sm font-semibold text-gray-400">Content Found</h4>
-                <p className="text-2xl font-bold text-blue-400">{stats.scrapedContent}</p>
+                <p className="text-2xl font-bold text-blue-400">{stats.basic.scrapedContent}</p>
               </div>
               <div className="bg-gray-700 p-4 rounded">
                 <h4 className="text-sm font-semibold text-gray-400">Status</h4>
-                <p className={`text-sm font-bold ${stats.isCurrentlyRunning ? 'text-yellow-400' : 'text-green-400'}`}>
-                  {stats.isCurrentlyRunning ? '🔄 Running' : '✅ Ready'}
+                <p className={`text-sm font-bold ${stats.basic.isCurrentlyRunning ? 'text-yellow-400' : 'text-green-400'}`}>
+                  {stats.basic.isCurrentlyRunning ? '🔄 Running' : '✅ Ready'}
                 </p>
               </div>
             </div>
@@ -377,7 +377,7 @@ const ScraperPanel: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={startManualScraping}
-                      disabled={isLoading || stats.isCurrentlyRunning}
+                      disabled={isLoading || stats.basic.isCurrentlyRunning}
                       className="bg-accent-green text-black px-3 py-2 rounded font-bold hover:bg-green-400 disabled:opacity-50 text-sm"
                     >
                       {isLoading ? '🔄 Scraping...' : '🚀 Full Scrape'}
@@ -443,11 +443,11 @@ const ScraperPanel: React.FC = () => {
             </div>
 
             {/* Real-time Content Discoveries */}
-            {recentDiscoveries.length > 0 && (
+            {wsDiscoveries.length > 0 && (
               <div className="bg-gray-700 p-4 rounded">
-                <h4 className="font-semibold text-white mb-3">🎯 Recent Discoveries ({recentDiscoveries.length})</h4>
+                <h4 className="font-semibold text-white mb-3">🎯 Recent Discoveries ({wsDiscoveries.length})</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {recentDiscoveries.slice(0, 5).map((discovery: any, index: number) => (
+                  {wsDiscoveries.slice(0, 5).map((discovery: any, index: number) => (
                     <div key={index} className="bg-gray-600 p-3 rounded">
                       <div className="flex justify-between items-start mb-1">
                         <span className="text-sm font-medium text-white">{discovery.sourceName}</span>
@@ -490,7 +490,7 @@ const ScraperPanel: React.FC = () => {
           <div className="space-y-4">
             <h4 className="font-semibold text-white">Scraping Targets</h4>
             
-            {stats.targets.map((target, index) => (
+            {stats.basic.targets.map((target, index) => (
               <div key={index} className="bg-gray-700 p-4 rounded flex justify-between items-center">
                 <div>
                   <h5 className="font-semibold text-white">{target.name}</h5>

@@ -25,7 +25,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onRetryConnection
 }) => {
   const [inputMessage, setInputMessage] = useState('');
-  const [isUserTyping, setIsUserTyping] = useState(false);
+  // const [isUserTyping, setIsUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -41,14 +41,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     if (inputMessage.trim()) {
       onSendMessage(inputMessage.trim());
       setInputMessage('');
-      setIsUserTyping(false);
+      // setIsUserTyping(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputMessage(e.target.value);
     const typing = e.target.value.length > 0;
-    setIsUserTyping(typing);
+    // setIsUserTyping(typing);
     onUserTyping?.(typing);
   };
 

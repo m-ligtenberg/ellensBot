@@ -1,0 +1,248 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import graffiti-style fonts */
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Fredoka+One:wght@400&family=Righteous&display=swap');
+
+:root {
+  --primary-bg: #0a0a0a;
+  --secondary-bg: #1a1a1a;
+  --tertiary-bg: #2d2d2d;
+  --accent-green: #00ff41;
+  --accent-yellow: #ffff00;
+  --accent-red: #ff073a;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --border-color: #333333;
+  --shadow-glow: 0 0 20px rgba(0, 255, 65, 0.3);
+  --shadow-chaos: 0 0 15px rgba(255, 255, 0, 0.4);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  
+  /* Mobile viewport fix */
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+html {
+  /* Mobile viewport fix */
+  height: -webkit-fill-available;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-yellow);
+}
+
+/* Glitch effect for chaos moments */
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+.glitch-effect {
+  animation: glitch 0.3s infinite;
+}
+
+/* Neon glow animations */
+@keyframes neon-pulse {
+  0%, 100% { 
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; 
+  }
+  50% { 
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor; 
+  }
+}
+
+.neon-glow {
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+/* Typing animation */
+@keyframes typing-dots {
+  0%, 20% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.typing-dot {
+  animation: typing-dots 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; /* Prevent zoom on input focus on iOS */
+  }
+  
+  /* Prevent bounce scrolling on iOS */
+  .chat-container {
+    position: fixed;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better touch targets */
+  button, input, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Dark mode utilities */
+.bg-primary { background-color: var(--primary-bg); }
+.bg-secondary { background-color: var(--secondary-bg); }
+.bg-tertiary { background-color: var(--tertiary-bg); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.border-custom { border-color: var(--border-color); }
+
+/* Street/graffiti style fonts */
+.font-graffiti { font-family: 'Creepster', 'Fredoka One', Impact, Arial Black, sans-serif; }
+.font-street { font-family: 'Righteous', 'Fredoka One', Impact, Arial Black, sans-serif; }
+
+/* Message bubble animations */
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.message-enter-left {
+  animation: slide-in-left 0.3s ease-out;
+}
+
+.message-enter-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+/* Connection status indicator */
+.connection-pulse {
+  animation: neon-pulse 1s ease-in-out infinite;
+}
+
+/* Chaos level indicator */
+.chaos-bar {
+  background: linear-gradient(90deg, 
+    var(--accent-green) 0%, 
+    var(--accent-yellow) 50%, 
+    var(--accent-red) 100%);
+  height: 3px;
+  border-radius: 2px;
+  transition: width 0.5s ease-in-out;
+}
+
+/* Young Ellens specific animations */
+@keyframes denial-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px) rotate(-0.5deg); }
+  75% { transform: translateX(2px) rotate(0.5deg); }
+}
+
+.denial-animation {
+  animation: denial-shake 0.5s ease-in-out;
+}
+
+@keyframes signature-glow {
+  0% { 
+    background-color: var(--accent-green); 
+    box-shadow: 0 0 5px var(--accent-green);
+  }
+  50% { 
+    background-color: var(--accent-yellow); 
+    box-shadow: 0 0 15px var(--accent-yellow);
+  }
+  100% { 
+    background-color: var(--accent-green); 
+    box-shadow: 0 0 5px var(--accent-green);
+  }
+}
+
+.signature-badge {
+  animation: signature-glow 2s ease-in-out infinite;
+}
+
+/* B-Negar style text effects */
+.b-negar-text {
+  font-weight: bold;
+  color: var(--accent-yellow);
+  text-shadow: 0 0 10px var(--accent-yellow);
+  animation: neon-pulse 1.5s ease-in-out infinite;
+}
+
+/* OWO style effects */
+.owo-effect {
+  color: #ff69b4;
+  font-weight: bold;
+  animation: neon-pulse 1s ease-in-out infinite;
+}
+
+/* Amsterdam pride styling */
+.amsterdam-badge {
+  background: linear-gradient(45deg, #ff0000, #ffffff, #000000);
+  animation: signature-glow 3s ease-in-out infinite;
+}
+
+/* Studio vibes styling */
+.studio-badge {
+  background: linear-gradient(45deg, #4a90e2, #7b68ee);
+  animation: neon-pulse 2s ease-in-out infinite;
+}

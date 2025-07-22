@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: ellens-bot-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install && npx tsc
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ellens-bot-db
+          property: connectionString
+      - key: CLAUDE_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://yourusername.github.io/ellens_bot2.0
+
+databases:
+  - name: ellens-bot-db
+    plan: free

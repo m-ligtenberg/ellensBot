@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useScraperWebSocket } from '../../hooks/useScraperWebSocket';
-
-interface ScrapingTarget {
-  name: string;
-  type: string;
-  enabled: boolean;
-  keywords: string[];
-}
+import { ScraperStats, ScrapingTarget, ContentDiscovery } from '../../types';
 
 interface ScrapingResult {
   title: string;
@@ -14,25 +8,6 @@ interface ScrapingResult {
   source: string;
   type: string;
   timestamp: string;
-}
-
-interface ScraperStats {
-  totalTargets: number;
-  enabledTargets: number;
-  scrapedContent: number;
-  isCurrentlyRunning: boolean;
-  targets: ScrapingTarget[];
-  advanced?: {
-    isMonitoring: boolean;
-    totalSources: number;
-    enabledSources: number;
-    activeSources: number;
-    totalContentFound: number;
-    highQualityContent: number;
-    averageQualityScore: number;
-    highQualityRate: number;
-    sources: ContentSource[];
-  };
 }
 
 interface ContentSource {
@@ -63,7 +38,7 @@ const ScraperPanel: React.FC = () => {
     disconnectFromScraper
   } = useScraperWebSocket(
     (newStats) => {
-      setStats(newStats as ScraperStats);
+      setStats(newStats);
       setIsWebSocketConnected(true);
     },
     (discovery) => {

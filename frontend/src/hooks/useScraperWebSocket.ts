@@ -1,41 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-interface ScraperStats {
-  basic: {
-    totalTargets: number;
-    enabledTargets: number;
-    scrapedContent: number;
-    isCurrentlyRunning: boolean;
-    targets: any[];
-  };
-  advanced: {
-    isMonitoring: boolean;
-    totalSources: number;
-    enabledSources: number;
-    activeSources: number;
-    totalContentFound: number;
-    highQualityContent: number;
-    averageQualityScore: number;
-    highQualityRate: number;
-    sources: any[];
-  };
-  timestamp: string;
-}
-
-interface ContentDiscovery {
-  sourceName: string;
-  contentCount: number;
-  content: Array<{
-    title: string;
-    source: string;
-    qualityScore: number;
-    sentiment: string;
-    timestamp: string;
-  }>;
-  totalQualityContent: number;
-  timestamp: string;
-}
+import { ScraperStats, ContentDiscovery } from '../types';
 
 interface UseScraperWebSocketReturn {
   isConnected: boolean;

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting to Young Ellens Chatbot...</title>
+    <meta http-equiv="refresh" content="0; url=https://m-ligtenberg.github.io/ellensBot/">
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif;
+            text-align: center; 
+            padding: 50px;
+            background: #0a0a0a;
+            color: #00ff41;
+        }
+        .loading { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <h1>🤖 Young Ellens Chatbot</h1>
+        <p>Redirecting to the React app...</p>
+        <p><a href="https://m-ligtenberg.github.io/ellensBot/" style="color: #00ff41;">Click here if not redirected</a></p>
+    </div>
+    
+    <script>
+        // Force redirect after 1 second
+        setTimeout(() => {
+            window.location.href = 'https://m-ligtenberg.github.io/ellensBot/';
+        }, 1000);
+    </script>
+</body>
+</html>

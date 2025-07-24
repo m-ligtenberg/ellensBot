@@ -41,6 +41,7 @@ const SubmissionsPanel: React.FC = () => {
   const [selectedSubmission, setSelectedSubmission] = useState<UserSubmission | null>(null);
   const [reviewReason, setReviewReason] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filter, setFilter] = useState<'pending' | 'flagged' | 'all'>('pending');
 
   const fetchSubmissions = async () => {

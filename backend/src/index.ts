@@ -14,6 +14,7 @@ import analyticsRoutes from './routes/analytics';
 import adminRoutes from './routes/admin';
 import scraperRoutes from './routes/scraper';
 import submissionsRoutes from './routes/submissions';
+import advancedMLRoutes from './routes/advancedML';
 
 // Import services
 import { initializeWebSocketService } from './services/websocketService';
@@ -62,6 +63,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/scraper', scraperRoutes);
 app.use('/api/submissions', submissionsRoutes);
+app.use('/api/ml', advancedMLRoutes);
 
 // Socket.io setup
 const io = new Server(server, {

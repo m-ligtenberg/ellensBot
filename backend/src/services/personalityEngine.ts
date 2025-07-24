@@ -4,6 +4,7 @@ import { contextMemory } from './contextMemory';
 import { PersonalityScoring } from './personalityScoring';
 import { contentLearning } from './contentLearning';
 import { Database } from '../database/connection';
+import { advancedMLEngine } from './advancedMLEngine';
 
 export interface EllensPersonalityState {
   denialMode: boolean;
@@ -58,6 +59,16 @@ export class EllensPersonalityEngine {
       this.initializeConversation(conversationId);
       state = this.conversations.get(conversationId)!;
     }
+
+    // Get adaptive language profile for this user
+    const languageProfile = await advancedMLEngine.adaptLanguageToUser(userId, state.conversationHistory);
+    
+    // Get optimized conversation flow
+    const conversationFlow = await advancedMLEngine.optimizeConversationFlow(userId, {
+      conversationLength: state.messageCount,
+      chaosLevel: state.chaosLevel,
+      currentMood: state.currentMood
+    });
 
     // Check for Easter eggs first (high priority)
     const easterEgg = PersonalityPatterns.getEasterEggResponse(userMessage);

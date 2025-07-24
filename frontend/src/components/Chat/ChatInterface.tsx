@@ -57,22 +57,46 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl h-[80vh] flex flex-col bg-gray-800 rounded-lg shadow-2xl border border-gray-700 overflow-hidden">
-        {/* Header */}
-        <div className="bg-gray-900 border-b border-gray-600 p-4 rounded-t-lg">
+        {/* Enhanced Header */}
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 border-b border-accent-green/30 p-4 rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold text-green-400 truncate">
-                🎤 Young Ellens
+              <h1 className="text-2xl font-bold text-accent-green truncate flex items-center">
+                🎤 Young Ellens Bot
+                <span className="ml-2 text-xs bg-accent-green text-black px-2 py-1 rounded-full font-normal">
+                  Mr. Cocaine
+                </span>
               </h1>
-              <p className="text-sm text-gray-400 mt-1 truncate">
+              <p className="text-sm text-gray-300 mt-1 truncate flex items-center">
                 {connectionError ? (
-                  <span className="text-red-500">❌ Connection Error</span>
+                  <span className="text-red-400 flex items-center">
+                    ❌ Connection Error
+                    <button 
+                      onClick={onRetryConnection}
+                      className="ml-2 text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                    >
+                      Retry
+                    </button>
+                  </span>
                 ) : !isConnected ? (
-                  <span className="text-yellow-500">🔄 Connecting...</span>
+                  <span className="text-yellow-400 flex items-center">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-400 mr-2"></div>
+                    Connecting...
+                  </span>
                 ) : isEllensTyping ? (
-                  <span>Typing...</span>
+                  <span className="text-accent-green flex items-center">
+                    <div className="flex space-x-1 mr-2">
+                      <div className="w-1 h-1 bg-accent-green rounded-full animate-bounce"></div>
+                      <div className="w-1 h-1 bg-accent-green rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-1 h-1 bg-accent-green rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                    Ellens is {ellensTypingMood}...
+                  </span>
                 ) : (
-                  "Online"
+                  <span className="text-green-400 flex items-center">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                    Online • "Alleen me wietje en me henny"
+                  </span>
                 )}
               </p>
             </div>

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { EllensPersonalityEngine } from '../services/personalityEngine';
 import { aiService } from '../services/aiService';
+import { chatPersistence } from '../services/chatPersistenceService';
 
 const router = Router();
 
@@ -69,23 +70,43 @@ router.post('/new', async (req, res) => {
   }
 });
 
-// GET /api/chat/:id - Get conversation (placeholder for future implementation)
+// GET /api/chat/:id - Get conversation history
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    // TODO: Implement conversation retrieval from database
+    // Retrieve conversation history from database
+    const conversation = await chatPersistence.getConversationHistory(id);
+    
+    if (!conversation) {
+      return res.status(404).json({
+        error: 'Conversation not found',
+        message: 'This conversation does not exist or has been deleted'
+      });
+    }
+
+    // Get current personality state if conversation is active
+    const personalityState = personalityEngine.getConversationState(id);
+    
     res.json({
       id,
-      messages: [],
-      message: 'Conversation history not implemented yet'
+      messages: conversation.messages,
+      conversationMetadata: {
+        startedAt: conversation.startedAt,
+        endedAt: conversation.endedAt,
+        messageCount: conversation.messages.length,
+        currentMood: personalityState?.currentMood || 'unknown',
+        chaosLevel: personalityState?.chaosLevel || 50,
+        isActive: !conversation.endedAt
+      }
     });
     return;
 
   } catch (error) {
     console.error('Error in chat/:id:', error);
     res.status(500).json({
-      error: 'Failed to retrieve conversation'
+      error: 'Failed to retrieve conversation',
+      message: 'Something went wrong while fetching the conversation'
     });
     return;
   }

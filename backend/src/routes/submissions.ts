@@ -14,6 +14,53 @@ import {
 const router = express.Router();
 const db = Database.getInstance();
 
+// Helper function to calculate community engagement score
+async function calculateCommunityEngagement(): Promise<number> {
+  try {
+    const result = await db.query(`
+      SELECT 
+        COUNT(DISTINCT s.user_session_id) as unique_contributors,
+        COUNT(*) as total_submissions,
+        COUNT(CASE WHEN s.submission_status = 'approved' THEN 1 END) as approved_count,
+        COALESCE(AVG(s.upvotes + s.downvotes), 0) as avg_votes_per_submission,
+        COUNT(DISTINCT v.user_session_id) as unique_voters
+      FROM user_submissions s
+      LEFT JOIN submission_votes v ON s.id = v.submission_id
+      WHERE s.created_at > NOW() - INTERVAL '7 days'
+    `);
+    
+    const stats = result.rows[0];
+    const uniqueContributors = parseInt(stats.unique_contributors) || 0;
+    const totalSubmissions = parseInt(stats.total_submissions) || 0;
+    const approvedCount = parseInt(stats.approved_count) || 0;
+    const avgVotes = parseFloat(stats.avg_votes_per_submission) || 0;
+    const uniqueVoters = parseInt(stats.unique_voters) || 0;
+    
+    // Calculate engagement score based on multiple factors
+    let engagementScore = 0;
+    
+    // Factor 1: Contributor diversity (0-30 points)
+    engagementScore += Math.min(30, uniqueContributors * 3);
+    
+    // Factor 2: Approval rate (0-25 points)
+    const approvalRate = totalSubmissions > 0 ? approvedCount / totalSubmissions : 0;
+    engagementScore += approvalRate * 25;
+    
+    // Factor 3: Voting activity (0-25 points)
+    engagementScore += Math.min(25, avgVotes * 5);
+    
+    // Factor 4: Community participation (voters vs contributors) (0-20 points)
+    const participationRatio = uniqueContributors > 0 ? uniqueVoters / uniqueContributors : 0;
+    engagementScore += Math.min(20, participationRatio * 10);
+    
+    // Normalize to 0-1 scale
+    return Math.min(1, engagementScore / 100);
+  } catch (error) {
+    console.error('Error calculating community engagement:', error);
+    return 0.5; // Default neutral score
+  }
+}
+
 // Submit new content from users
 router.post('/submit', async (req, res): Promise<void> => {
   try {
@@ -388,7 +435,7 @@ router.get('/admin/stats', async (req, res): Promise<void> => {
       total_rejected_today: parseInt(statsResult.rows[0].total_rejected_today) || 0,
       avg_review_time_hours: parseFloat(statsResult.rows[0].avg_review_time_hours) || 0,
       most_active_category: categoryResult.rows[0]?.submission_type || 'none',
-      community_engagement_score: 0.85, // TODO: calculate based on votes/submissions ratio
+      community_engagement_score: await calculateCommunityEngagement(),
       top_contributors: contributorsResult.rows.map(row => ({
         session_id: row.user_session_id.substring(0, 8) + '...', // anonymize
         submission_count: parseInt(row.submission_count),

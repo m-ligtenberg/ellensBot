@@ -423,6 +423,14 @@ export class MLPatternOptimizer {
     return typeScores[type] || 0.5;
   }
 
+  private estimateLanguageConfidence(text: string): number {
+    // Simple Dutch language detection based on common words
+    const dutchWords = ['de', 'het', 'en', 'een', 'van', 'dat', 'die', 'in', 'te', 'met', 'voor', 'op', 'aan', 'als', 'zijn', 'wij', 'hij', 'zij', 'maar', 'wat', 'waar', 'hoe', 'waarom', 'alleen', 'ik', 'je', 'we', 'ze', 'niet', 'wel', 'ook'];
+    const words = text.toLowerCase().split(/\s+/);
+    const dutchWordCount = words.filter(word => dutchWords.includes(word)).length;
+    return Math.min(1, dutchWordCount / Math.max(words.length * 0.3, 1));
+  }
+
   /**
    * Train ML models with accumulated data
    */
@@ -454,12 +462,12 @@ export class MLPatternOptimizer {
     const trainingData = this.interactionHistory.map(interaction => ({
       features: {
         content_length: Math.min(1, (interaction.contentType.length * 100) / 1000),
-        keyword_density: 0.5, // Placeholder
-        source_reputation: 0.7, // Placeholder
-        freshness_score: 0.8, // Placeholder
-        entity_count: 0.6, // Placeholder
-        sentiment_score: 0.7, // Placeholder
-        language_confidence: 0.9 // Placeholder
+        keyword_density: this.calculateKeywordDensity(interaction.contentType || ''),
+        source_reputation: this.getSourceReputation(interaction.sourceName),
+        freshness_score: this.calculateFreshnessScore(interaction.timestamp.toISOString()),
+        entity_count: Math.min(1, (interaction.contentType?.split(' ').length || 0) / 20),
+        sentiment_score: interaction.userEngagement === 'positive' ? 1 : interaction.userEngagement === 'negative' ? 0 : 0.5,
+        language_confidence: this.estimateLanguageConfidence(interaction.contentType || '')
       },
       target: this.mapEngagementToScore(interaction.userEngagement)
     }));

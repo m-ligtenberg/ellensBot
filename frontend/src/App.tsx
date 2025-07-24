@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import ChatInterface from './components/Chat/ChatInterface';
 import AdminPanel from './components/Admin/AdminPanel';
 import SubmissionForm from './components/Chat/SubmissionForm';
+import LoginForm from './components/Auth/LoginForm';
 import { useWebSocketChat } from './hooks/useWebSocketChat';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-function App() {
+const AppContent: React.FC = () => {
   const [isSubmissionFormOpen, setIsSubmissionFormOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [isLoginFormOpen, setIsLoginFormOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
   
   const { 
     messages, 
@@ -59,16 +64,51 @@ function App() {
         onRetryConnection={retryConnection}
       />
       
-      {/* Floating action button to open submission form */}
-      <button
-        onClick={() => setIsSubmissionFormOpen(true)}
-        className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-colors z-40"
-        title="Teach Ellens new words"
-      >
-        🎤
-      </button>
+      {/* Improved Floating Action Buttons */}
+      <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-40">
+        {/* Submission button */}
+        <button
+          onClick={() => setIsSubmissionFormOpen(true)}
+          className="bg-accent-green text-black p-4 rounded-full shadow-lg hover:bg-green-400 transition-all transform hover:scale-110 group"
+          title="Teach Ellens new words"
+        >
+          <span className="text-xl">🎤</span>
+          <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            Teach Ellens
+          </div>
+        </button>
+        
+        {/* Admin button */}
+        <button
+          onClick={() => {
+            if (isAuthenticated) {
+              setIsAdminPanelOpen(true);
+            } else {
+              setIsLoginFormOpen(true);
+            }
+          }}
+          className="bg-purple-600 text-white p-4 rounded-full shadow-lg hover:bg-purple-500 transition-all transform hover:scale-110 group"
+          title="Admin Panel"
+        >
+          <span className="text-xl">⚙️</span>
+          <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            Admin Panel
+          </div>
+        </button>
+      </div>
       
-      <AdminPanel onContentUpload={handleContentUpload} />
+      {/* Admin Panel */}
+      {isAdminPanelOpen && (
+        <AdminPanel 
+          onContentUpload={handleContentUpload}
+          onClose={() => setIsAdminPanelOpen(false)}
+        />
+      )}
+      
+      {/* Login Form */}
+      {isLoginFormOpen && (
+        <LoginForm onClose={() => setIsLoginFormOpen(false)} />
+      )}
       
       <SubmissionForm
         isOpen={isSubmissionFormOpen}
@@ -79,6 +119,14 @@ function App() {
         }}
       />
     </div>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

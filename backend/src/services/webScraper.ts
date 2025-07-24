@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import { contentLearning } from './contentLearning';
 
 export interface ScrapedContent {
+  id?: string;
   title: string;
   content: string;
   source: string;
@@ -18,6 +19,7 @@ export interface ScrapedContent {
     reason?: string;
     extractedFrom?: string;
     contentLength?: number;
+    quality?: number;
   };
 }
 
@@ -584,13 +586,39 @@ export class WebScraperService {
   public async scrapeSocialMedia(): Promise<ScrapedContent[]> {
     console.log('📱 Social media scraping requires API access...');
     
-    // Placeholder for social media scraping
-    // In production, you would use:
+    // Mock social media content for development
+    // In production, you would integrate with:
     // - Twitter API v2
-    // - Instagram Basic Display API  
+    // - Instagram Basic Display API
     // - TikTok API
     
-    return [];
+    const mockSocialContent: ScrapedContent[] = [
+      {
+        id: `social_${Date.now()}_1`,
+        title: 'Young Ellens Social Post',
+        content: 'Yo wat is er? Alleen me wietje en me henny zoals altijd! 😎 #NoCokeHere #JustWeedAndHenny',
+        source: 'Mock Social Media',
+        url: 'https://example.com/social/1',
+        timestamp: new Date().toISOString(),
+        type: 'social_media',
+        metadata: { quality: Math.random() * 0.4 + 0.6 } // 0.6-1.0 range
+      },
+      {
+        id: `social_${Date.now()}_2`,
+        title: 'Street Wisdom',
+        content: 'Mensen vragen altijd over drugs maar ik ben daar niet op! Wel eens van henny gehoord? Dat is mijn ding mattie',
+        source: 'Mock Social Media',
+        url: 'https://example.com/social/2',
+        timestamp: new Date().toISOString(),
+        type: 'social_media',
+        metadata: { quality: Math.random() * 0.4 + 0.6 }
+      }
+    ];
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return mockSocialContent;
   }
 
   // Get scraper statistics

@@ -3,6 +3,7 @@ import { EllensPersonalityEngine } from './personalityEngine';
 import { chatPersistence } from './chatPersistenceService';
 import { advancedScraper } from './advancedScraper';
 import { webScraper } from './webScraper';
+import { advancedMLEngine } from './advancedMLEngine';
 import { v4 as uuidv4 } from 'uuid';
 
 interface SocketUser {
@@ -137,6 +138,16 @@ export function initializeWebSocketService(io: Server): void {
               mood: response.mood,
               chaosLevel: response.chaosLevel
             };
+
+            // Update user engagement model with this interaction
+            await advancedMLEngine.updateUserEngagementModel(user.id, {
+              userMessage: message,
+              response: response.text,
+              chaosLevel: response.chaosLevel,
+              userReaction: 'continued', // User sent message, indicating engagement
+              conversationLength: ellensState?.messageCount || 0,
+              responseTime: Date.now() - messageStartTime
+            });
 
             socket.emit('ellens_response', {
               ...responseMessage,

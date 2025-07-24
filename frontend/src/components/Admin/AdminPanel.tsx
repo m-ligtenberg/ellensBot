@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import ScraperPanel from './ScraperPanel';
 import SubmissionsPanel from './SubmissionsPanel';
+import AdvancedMLPanel from './AdvancedMLPanel';
 
 interface ContentItem {
   id: string;
@@ -14,11 +16,12 @@ interface ContentItem {
 
 interface AdminPanelProps {
   onContentUpload: (content: Omit<ContentItem, 'id' | 'uploadDate' | 'status'>) => void;
+  onClose?: () => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'upload' | 'content' | 'scraper' | 'submissions' | 'analytics'>('upload');
+const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload, onClose }) => {
+  const { isAuthenticated, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState<'upload' | 'content' | 'scraper' | 'submissions' | 'analytics' | 'ml'>('upload');
   const [uploadedContent, setUploadedContent] = useState<ContentItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -83,15 +86,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
     );
   };
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 bg-accent-yellow text-black px-4 py-2 rounded-full font-bold shadow-lg hover:bg-yellow-300 transition-colors z-50"
-      >
-        🔧 Admin
-      </button>
-    );
+
+  // Check authentication
+  if (!isAuthenticated) {
+    return null; // Don't render anything if not authenticated
   }
 
   return (
@@ -102,9 +100,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
           <h2 className="text-xl font-bold text-accent-green">
             🎤 Young Ellens Admin Panel
           </h2>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="text-gray-400 hover:text-white text-2xl"
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={logout}
+              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+            >
+              Logout
+            </button>
+            <button
+              onClick={() => {
+                onClose?.();
+              }}
+              className="text-gray-400 hover:text-white text-2xl"
           >
             ×
           </button>
@@ -112,7 +119,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
 
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-700">
-          {(['upload', 'content', 'scraper', 'submissions', 'analytics'] as const).map((tab) => (
+          {(['upload', 'content', 'scraper', 'submissions', 'analytics', 'ml'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -123,7 +130,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
               }`}
             >
               {tab === 'upload' && '📤'} {tab === 'content' && '📚'} 
-              {tab === 'scraper' && '🕷️'} {tab === 'submissions' && '🚀'} {tab === 'analytics' && '📊'} {tab}
+              {tab === 'scraper' && '🕷️'} {tab === 'submissions' && '🚀'} {tab === 'analytics' && '📊'} 
+              {tab === 'ml' && '🧠'} {tab === 'ml' ? 'ML Controls' : tab}
             </button>
           ))}
         </div>
@@ -339,8 +347,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
               </div>
             </div>
           )}
+
+          {/* ML Controls Tab */}
+          {activeTab === 'ml' && (
+            <AdvancedMLPanel />
+          )}
         </div>
       </div>
+    </div>
     </div>
   );
 };

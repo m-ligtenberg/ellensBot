@@ -494,6 +494,12 @@ SESSION_SECRET=random_secret_key
 - Track emoji reactions and user engagement as feedback signals
 - Build reinforcement learning loop for chaos timing optimization
 
+## Admin Panel Access
+
+**Password**: `ellens2024`
+
+The admin panel requires authentication to access. Use the purple gear button in the bottom-right corner of the frontend to access it.
+
 ## Notes
 
 - This is a comedic parody chatbot, not promoting actual drug use

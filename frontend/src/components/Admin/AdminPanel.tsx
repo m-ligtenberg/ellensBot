@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import ScraperPanel from './ScraperPanel';
 import SubmissionsPanel from './SubmissionsPanel';
 import AdvancedMLPanel from './AdvancedMLPanel';
+import MLDiscoveryPanel from './MLDiscoveryPanel';
 
 interface ContentItem {
   id: string;
@@ -21,7 +22,7 @@ interface AdminPanelProps {
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload, onClose }) => {
   const { isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'upload' | 'content' | 'scraper' | 'submissions' | 'analytics' | 'ml'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'content' | 'scraper' | 'submissions' | 'analytics' | 'ml' | 'discovery'>('upload');
   const [uploadedContent, setUploadedContent] = useState<ContentItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -119,7 +120,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload, onClose }) => 
 
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-700">
-          {(['upload', 'content', 'scraper', 'submissions', 'analytics', 'ml'] as const).map((tab) => (
+          {(['upload', 'content', 'scraper', 'submissions', 'analytics', 'ml', 'discovery'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -131,7 +132,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload, onClose }) => 
             >
               {tab === 'upload' && '📤'} {tab === 'content' && '📚'} 
               {tab === 'scraper' && '🕷️'} {tab === 'submissions' && '🚀'} {tab === 'analytics' && '📊'} 
-              {tab === 'ml' && '🧠'} {tab === 'ml' ? 'ML Controls' : tab}
+              {tab === 'ml' && '🧠'} {tab === 'discovery' && '🤖'} 
+              {tab === 'ml' ? 'ML Controls' : tab === 'discovery' ? 'ML Discovery' : tab}
             </button>
           ))}
         </div>
@@ -351,6 +353,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload, onClose }) => 
           {/* ML Controls Tab */}
           {activeTab === 'ml' && (
             <AdvancedMLPanel />
+          )}
+
+          {/* ML Discovery Tab */}
+          {activeTab === 'discovery' && (
+            <MLDiscoveryPanel />
           )}
         </div>
       </div>

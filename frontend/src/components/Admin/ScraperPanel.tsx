@@ -271,29 +271,29 @@ const ScraperPanel: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gray-800 p-4 rounded-lg">
-        <div className="flex justify-between items-start mb-4">
+    <div className="space-y-8 font-apple">
+      <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-8">
+        <div className="flex justify-between items-start mb-6">
           <div>
-            <h3 className="text-lg font-bold text-accent-yellow">
+            <h3 className="text-2xl font-semibold text-apple-gray-900">
               🕷️ Web Scraper & Content Crawler
             </h3>
-            <p className="text-gray-300 mt-2">
+            <p className="text-apple-gray-600 mt-2">
               Automatically discover and collect Young Ellens content from across the web to enhance the chatbot's personality.
             </p>
           </div>
           
           {/* Connection Status */}
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
-            <span className="text-sm text-gray-400">
+          <div className="flex items-center space-x-3">
+            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-apple-green animate-pulse' : 'bg-apple-gray-400'}`}></div>
+            <span className="text-sm text-apple-gray-600 font-medium">
               {isConnected ? 'Live Updates' : 'Offline'}
             </span>
           </div>
         </div>
         
         {/* Tab Navigation */}
-        <div className="flex space-x-4 mb-6 overflow-x-auto">
+        <div className="flex space-x-1 mb-8 bg-apple-gray-100 p-1 rounded-xl overflow-x-auto">
           {(['overview', 'targets', 'advanced', 'schedule', 'manual'] as const).map((tab) => (
             <button
               key={tab}
@@ -301,10 +301,10 @@ const ScraperPanel: React.FC = () => {
                 setActiveTab(tab);
                 if (tab === 'advanced') loadAdvancedContent();
               }}
-              className={`px-4 py-2 rounded font-medium capitalize whitespace-nowrap ${
+              className={`px-4 py-2 rounded-lg font-medium capitalize whitespace-nowrap transition-all duration-200 ${
                 activeTab === tab
-                  ? 'bg-accent-green text-black'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-apple-blue text-white'
+                  : 'text-apple-gray-600 hover:text-apple-gray-900 hover:bg-apple-gray-200'
               }`}
             >
               {tab === 'overview' && '📊'} {tab === 'targets' && '🎯'} 
@@ -314,72 +314,74 @@ const ScraperPanel: React.FC = () => {
         </div>
 
         {/* Overview Tab */}
-        {activeTab === 'overview' && stats && (
+        {activeTab === 'overview' && (
           <div className="space-y-4">
-            {/* Basic Stats Row */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gray-700 p-4 rounded">
-                <h4 className="text-sm font-semibold text-gray-400">Total Targets</h4>
-                <p className="text-2xl font-bold text-white">{stats.basic.totalTargets}</p>
-              </div>
-              <div className="bg-gray-700 p-4 rounded">
-                <h4 className="text-sm font-semibold text-gray-400">Active Targets</h4>
-                <p className="text-2xl font-bold text-green-400">{stats.basic.enabledTargets}</p>
-              </div>
-              <div className="bg-gray-700 p-4 rounded">
-                <h4 className="text-sm font-semibold text-gray-400">Content Found</h4>
-                <p className="text-2xl font-bold text-blue-400">{stats.basic.scrapedContent}</p>
-              </div>
-              <div className="bg-gray-700 p-4 rounded">
-                <h4 className="text-sm font-semibold text-gray-400">Status</h4>
-                <p className={`text-sm font-bold ${stats.basic.isCurrentlyRunning ? 'text-yellow-400' : 'text-green-400'}`}>
-                  {stats.basic.isCurrentlyRunning ? '🔄 Running' : '✅ Ready'}
-                </p>
-              </div>
-            </div>
+            {stats?.basic ? (
+              <>
+                {/* Basic Stats Row */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-apple-gray-50 p-6 rounded-2xl border border-apple-gray-200">
+                    <h4 className="text-sm font-medium text-apple-gray-600 mb-2">Total Targets</h4>
+                    <p className="text-2xl font-bold text-apple-gray-900">{stats.basic.totalTargets || 0}</p>
+                  </div>
+                  <div className="bg-apple-gray-50 p-6 rounded-2xl border border-apple-gray-200">
+                    <h4 className="text-sm font-medium text-apple-gray-600 mb-2">Active Targets</h4>
+                    <p className="text-2xl font-bold text-apple-green">{stats.basic.enabledTargets || 0}</p>
+                  </div>
+                  <div className="bg-apple-gray-50 p-6 rounded-2xl border border-apple-gray-200">
+                    <h4 className="text-sm font-medium text-apple-gray-600 mb-2">Content Found</h4>
+                    <p className="text-2xl font-bold text-apple-blue">{stats.basic.scrapedContent || 0}</p>
+                  </div>
+                  <div className="bg-apple-gray-50 p-6 rounded-2xl border border-apple-gray-200">
+                    <h4 className="text-sm font-medium text-apple-gray-600 mb-2">Status</h4>
+                    <p className={`text-sm font-semibold ${stats.basic.isCurrentlyRunning ? 'text-apple-orange' : 'text-apple-green'}`}>
+                      {stats.basic.isCurrentlyRunning ? '🔄 Running' : '✅ Ready'}
+                    </p>
+                  </div>
+                </div>
 
             {/* Advanced Stats Row */}
             {stats.advanced && (
               <div>
-                <h4 className="text-lg font-semibold text-accent-yellow mb-3">🚀 Advanced Monitoring</h4>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-purple-900 p-4 rounded">
-                    <h4 className="text-sm font-semibold text-purple-300">Content Sources</h4>
-                    <p className="text-2xl font-bold text-white">{stats.advanced.totalSources}</p>
-                    <p className="text-xs text-purple-300">{stats.advanced.enabledSources} enabled</p>
+                <h4 className="text-xl font-semibold text-apple-gray-900 mb-6">🚀 Advanced Monitoring</h4>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-apple-purple bg-opacity-10 p-6 rounded-2xl border border-apple-purple border-opacity-20">
+                    <h4 className="text-sm font-medium text-apple-purple mb-2">Content Sources</h4>
+                    <p className="text-2xl font-bold text-apple-gray-900">{stats.advanced.totalSources}</p>
+                    <p className="text-xs text-apple-purple opacity-80">{stats.advanced.enabledSources} enabled</p>
                   </div>
-                  <div className="bg-indigo-900 p-4 rounded">
-                    <h4 className="text-sm font-semibold text-indigo-300">Quality Content</h4>
-                    <p className="text-2xl font-bold text-white">{stats.advanced.highQualityContent}</p>
-                    <p className="text-xs text-indigo-300">{stats.advanced.highQualityRate}% high quality</p>
+                  <div className="bg-apple-blue bg-opacity-10 p-6 rounded-2xl border border-apple-blue border-opacity-20">
+                    <h4 className="text-sm font-medium text-apple-blue mb-2">Quality Content</h4>
+                    <p className="text-2xl font-bold text-apple-gray-900">{stats.advanced.highQualityContent}</p>
+                    <p className="text-xs text-apple-blue opacity-80">{stats.advanced.highQualityRate}% high quality</p>
                   </div>
-                  <div className="bg-teal-900 p-4 rounded">
-                    <h4 className="text-sm font-semibold text-teal-300">Avg Quality Score</h4>
-                    <p className="text-2xl font-bold text-white">{stats.advanced.averageQualityScore}</p>
-                    <p className="text-xs text-teal-300">out of 100</p>
+                  <div className="bg-apple-green bg-opacity-10 p-6 rounded-2xl border border-apple-green border-opacity-20">
+                    <h4 className="text-sm font-medium text-apple-green mb-2">Avg Quality Score</h4>
+                    <p className="text-2xl font-bold text-apple-gray-900">{stats.advanced.averageQualityScore}</p>
+                    <p className="text-xs text-apple-green opacity-80">out of 100</p>
                   </div>
-                  <div className="bg-emerald-900 p-4 rounded">
-                    <h4 className="text-sm font-semibold text-emerald-300">Monitor Status</h4>
-                    <p className={`text-sm font-bold ${stats.advanced.isMonitoring ? 'text-green-400' : 'text-gray-400'}`}>
+                  <div className="bg-apple-orange bg-opacity-10 p-6 rounded-2xl border border-apple-orange border-opacity-20">
+                    <h4 className="text-sm font-medium text-apple-orange mb-2">Monitor Status</h4>
+                    <p className={`text-sm font-semibold ${stats.advanced.isMonitoring ? 'text-apple-green' : 'text-apple-gray-500'}`}>
                       {stats.advanced.isMonitoring ? '🔄 Active' : '⏸️ Inactive'}
                     </p>
-                    <p className="text-xs text-emerald-300">{stats.advanced.activeSources} active sources</p>
+                    <p className="text-xs text-apple-orange opacity-80">{stats.advanced.activeSources} active sources</p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="bg-gray-700 p-4 rounded">
-              <h4 className="font-semibold text-white mb-3">Quick Actions</h4>
-              <div className="space-y-3">
+            <div className="bg-apple-gray-50 p-6 rounded-2xl border border-apple-gray-200">
+              <h4 className="font-semibold text-apple-gray-900 mb-4">Quick Actions</h4>
+              <div className="space-y-4">
                 {/* Basic Scraping */}
                 <div>
-                  <h5 className="text-sm font-medium text-gray-300 mb-2">Basic Scraping</h5>
-                  <div className="flex flex-wrap gap-2">
+                  <h5 className="text-sm font-medium text-apple-gray-700 mb-3">Basic Scraping</h5>
+                  <div className="flex flex-wrap gap-3">
                     <button
                       onClick={startManualScraping}
-                      disabled={isLoading || stats.basic.isCurrentlyRunning}
-                      className="bg-accent-green text-black px-3 py-2 rounded font-bold hover:bg-green-400 disabled:opacity-50 text-sm"
+                      disabled={isLoading || (stats?.basic?.isCurrentlyRunning || false)}
+                      className="bg-apple-green text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 disabled:opacity-50 text-sm transition-all duration-200"
                     >
                       {isLoading ? '🔄 Scraping...' : '🚀 Full Scrape'}
                     </button>
@@ -387,7 +389,7 @@ const ScraperPanel: React.FC = () => {
                     <button
                       onClick={() => scrapeSpecificPlatform('youtube')}
                       disabled={isLoading}
-                      className="bg-red-600 text-white px-3 py-2 rounded font-bold hover:bg-red-700 disabled:opacity-50 text-sm"
+                      className="bg-apple-red text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 disabled:opacity-50 text-sm transition-all duration-200"
                     >
                       📺 YouTube
                     </button>
@@ -395,7 +397,7 @@ const ScraperPanel: React.FC = () => {
                     <button
                       onClick={() => scrapeSpecificPlatform('lyrics')}
                       disabled={isLoading}
-                      className="bg-purple-600 text-white px-3 py-2 rounded font-bold hover:bg-purple-700 disabled:opacity-50 text-sm"
+                      className="bg-apple-purple text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 disabled:opacity-50 text-sm transition-all duration-200"
                     >
                       🎵 Lyrics
                     </button>
@@ -403,7 +405,7 @@ const ScraperPanel: React.FC = () => {
                     <button
                       onClick={() => scrapeSpecificPlatform('social')}
                       disabled={isLoading}
-                      className="bg-blue-600 text-white px-3 py-2 rounded font-bold hover:bg-blue-700 disabled:opacity-50 text-sm"
+                      className="bg-apple-blue text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 disabled:opacity-50 text-sm transition-all duration-200"
                     >
                       📱 Social
                     </button>
@@ -413,19 +415,19 @@ const ScraperPanel: React.FC = () => {
                 {/* Advanced Monitoring */}
                 {stats.advanced && (
                   <div>
-                    <h5 className="text-sm font-medium text-gray-300 mb-2">Advanced Monitoring</h5>
-                    <div className="flex flex-wrap gap-2">
+                    <h5 className="text-sm font-medium text-apple-gray-700 mb-3">Advanced Monitoring</h5>
+                    <div className="flex flex-wrap gap-3">
                       {!stats.advanced.isMonitoring ? (
                         <button
                           onClick={startAdvancedMonitoring}
-                          className="bg-purple-600 text-white px-3 py-2 rounded font-bold hover:bg-purple-700 text-sm"
+                          className="bg-apple-purple text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 text-sm transition-all duration-200"
                         >
                           🚀 Start Advanced Monitor
                         </button>
                       ) : (
                         <button
                           onClick={stopAdvancedMonitoring}
-                          className="bg-orange-600 text-white px-3 py-2 rounded font-bold hover:bg-orange-700 text-sm"
+                          className="bg-apple-orange text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 text-sm transition-all duration-200"
                         >
                           ⏸️ Stop Advanced Monitor
                         </button>
@@ -433,44 +435,52 @@ const ScraperPanel: React.FC = () => {
                       
                       <button
                         onClick={loadAdvancedContent}
-                        className="bg-indigo-600 text-white px-3 py-2 rounded font-bold hover:bg-indigo-700 text-sm"
+                        className="bg-apple-blue text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 text-sm transition-all duration-200"
                       >
                         📊 View Discovered Content
                       </button>
                     </div>
                   </div>
                 )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="bg-apple-gray-50 p-8 rounded-2xl border border-apple-gray-200 text-center">
+                <div className="text-4xl mb-4">🕷️</div>
+                <h4 className="text-lg font-semibold text-apple-gray-900 mb-2">Loading Scraper Stats...</h4>
+                <p className="text-apple-gray-600">Please wait while we fetch the latest information.</p>
               </div>
-            </div>
+            )}
 
             {/* Real-time Content Discoveries */}
             {wsDiscoveries.length > 0 && (
-              <div className="bg-gray-700 p-4 rounded">
-                <h4 className="font-semibold text-white mb-3">🎯 Recent Discoveries ({wsDiscoveries.length})</h4>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="bg-apple-gray-50 p-6 rounded-2xl border border-apple-gray-200">
+                <h4 className="font-semibold text-apple-gray-900 mb-4">🎯 Recent Discoveries ({wsDiscoveries.length})</h4>
+                <div className="space-y-3 max-h-48 overflow-y-auto">
                   {wsDiscoveries.slice(0, 5).map((discovery: any, index: number) => (
-                    <div key={index} className="bg-gray-600 p-3 rounded">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-sm font-medium text-white">{discovery.sourceName}</span>
-                        <span className="text-xs text-gray-400">
+                    <div key={index} className="bg-white p-4 rounded-xl border border-apple-gray-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-sm font-medium text-apple-gray-900">{discovery.sourceName}</span>
+                        <span className="text-xs text-apple-gray-600">
                           {new Date(discovery.timestamp).toLocaleTimeString()}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-300 mb-2">
+                      <p className="text-xs text-apple-gray-700 mb-3">
                         Found {discovery.contentCount} items • {discovery.totalQualityContent} high quality
                       </p>
                       {discovery.content.slice(0, 2).map((item: any, i: number) => (
-                        <div key={i} className="bg-gray-800 p-2 rounded mb-1 last:mb-0">
+                        <div key={i} className="bg-apple-gray-50 p-3 rounded-xl mb-2 last:mb-0">
                           <div className="flex justify-between items-center">
-                            <span className="text-xs text-white truncate flex-1">{item.title}</span>
-                            <div className="flex items-center space-x-1 ml-2">
-                              <span className="text-xs bg-purple-600 text-white px-1 py-0.5 rounded">
+                            <span className="text-xs text-apple-gray-900 truncate flex-1">{item.title}</span>
+                            <div className="flex items-center space-x-2 ml-2">
+                              <span className="text-xs bg-apple-purple text-white px-2 py-1 rounded-full font-medium">
                                 {item.qualityScore}
                               </span>
-                              <span className={`text-xs px-1 py-0.5 rounded ${
-                                item.sentiment === 'positive' ? 'bg-green-600 text-white' :
-                                item.sentiment === 'negative' ? 'bg-red-600 text-white' :
-                                'bg-gray-600 text-gray-300'
+                              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                item.sentiment === 'positive' ? 'bg-apple-green text-white' :
+                                item.sentiment === 'negative' ? 'bg-apple-red text-white' :
+                                'bg-apple-gray-300 text-apple-gray-700'
                               }`}>
                                 {item.sentiment}
                               </span>
@@ -487,11 +497,11 @@ const ScraperPanel: React.FC = () => {
         )}
 
         {/* Targets Tab */}
-        {activeTab === 'targets' && stats && (
-          <div className="space-y-4">
-            <h4 className="font-semibold text-white">Scraping Targets</h4>
+        {activeTab === 'targets' && (
+          <div className="space-y-6">
+            <h4 className="font-semibold text-apple-gray-900 text-xl">Scraping Targets</h4>
             
-            {stats.basic.targets.map((target, index) => (
+            {stats?.basic?.targets?.map((target, index) => (
               <div key={index} className="bg-gray-700 p-4 rounded flex justify-between items-center">
                 <div>
                   <h5 className="font-semibold text-white">{target.name}</h5>
@@ -570,126 +580,126 @@ const ScraperPanel: React.FC = () => {
         )}
 
         {/* Advanced Tab */}
-        {activeTab === 'advanced' && stats && (
+        {activeTab === 'advanced' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h4 className="font-semibold text-white">🚀 Advanced Content Discovery</h4>
-              {stats.advanced && (
+              <h4 className="font-semibold text-apple-gray-900 text-xl">🚀 Advanced Content Discovery</h4>
+              {stats?.advanced && (
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  stats.advanced.isMonitoring ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'
+                  stats.advanced.isMonitoring ? 'bg-apple-green text-white' : 'bg-apple-gray-400 text-white'
                 }`}>
                   {stats.advanced.isMonitoring ? '🔄 Active' : '⏸️ Inactive'}
                 </span>
               )}
             </div>
             
-            {stats.advanced ? (
-              <div className="space-y-4">
+            {stats?.advanced ? (
+              <div className="space-y-6">
                 {/* Content Sources */}
-                <div className="bg-gray-700 p-4 rounded">
-                  <h5 className="font-semibold text-white mb-3">📡 Content Sources ({stats.advanced.sources?.length || 0})</h5>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="bg-white p-6 rounded-2xl shadow-card border border-apple-gray-300">
+                  <h5 className="font-semibold text-apple-gray-900 mb-4">📡 Content Sources ({stats.advanced.sources?.length || 0})</h5>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
                     {stats.advanced.sources?.map((source: any, index: number) => (
-                      <div key={index} className="bg-gray-600 p-3 rounded flex justify-between items-center">
+                      <div key={index} className="bg-apple-gray-50 p-4 rounded-xl border border-apple-gray-200 flex justify-between items-center">
                         <div className="flex-1">
-                          <h6 className="font-medium text-white text-sm">{source.name}</h6>
-                          <p className="text-xs text-gray-300">
+                          <h6 className="font-medium text-apple-gray-900 text-sm">{source.name}</h6>
+                          <p className="text-xs text-apple-gray-600">
                             {source.type} • {source.itemsFound} items • {source.successRate}% success rate
                           </p>
                           {source.lastChecked && (
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-apple-gray-500">
                               Last: {new Date(source.lastChecked).toLocaleString()}
                             </p>
                           )}
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 rounded text-xs font-bold ${
-                            source.enabled ? 'bg-green-600 text-white' : 'bg-gray-500 text-gray-300'
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            source.enabled ? 'bg-apple-green text-white' : 'bg-apple-gray-400 text-white'
                           }`}>
                             {source.enabled ? 'ON' : 'OFF'}
                           </span>
                           <button
                             onClick={() => toggleContentSource(source.id, !source.enabled)}
-                            className="bg-accent-yellow text-black px-2 py-1 rounded text-xs font-bold hover:bg-yellow-300"
+                            className="bg-apple-blue text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-opacity-90 transition-all duration-200"
                           >
                             Toggle
                           </button>
                         </div>
                       </div>
                     )) || (
-                      <p className="text-gray-400 text-center py-4">No content sources configured</p>
+                      <p className="text-apple-gray-500 text-center py-4">No content sources configured</p>
                     )}
                   </div>
                 </div>
 
                 {/* Discovered Content */}
-                <div className="bg-gray-700 p-4 rounded">
-                  <div className="flex justify-between items-center mb-3">
-                    <h5 className="font-semibold text-white">🎯 High-Quality Discovered Content</h5>
+                <div className="bg-white p-6 rounded-2xl shadow-card border border-apple-gray-300">
+                  <div className="flex justify-between items-center mb-4">
+                    <h5 className="font-semibold text-apple-gray-900">🎯 High-Quality Discovered Content</h5>
                     <button
                       onClick={loadAdvancedContent}
-                      className="bg-indigo-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-indigo-700"
+                      className="bg-apple-blue text-white px-3 py-2 rounded-xl text-xs font-medium hover:bg-opacity-90 transition-all duration-200"
                     >
                       Refresh
                     </button>
                   </div>
                   
-                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
                     {advancedContent.length > 0 ? (
                       advancedContent.slice(0, 10).map((item: any, index: number) => (
-                        <div key={index} className="bg-gray-600 p-3 rounded">
-                          <div className="flex justify-between items-start mb-2">
+                        <div key={index} className="bg-apple-gray-50 p-4 rounded-xl border border-apple-gray-200">
+                          <div className="flex justify-between items-start mb-3">
                             <div className="flex-1">
-                              <h6 className="font-medium text-white text-sm line-clamp-1">{item.title}</h6>
-                              <p className="text-xs text-gray-300 mb-1">
+                              <h6 className="font-medium text-apple-gray-900 text-sm line-clamp-1">{item.title}</h6>
+                              <p className="text-xs text-apple-gray-600 mb-1">
                                 Source: {item.source} • Language: {item.language || 'unknown'}
                               </p>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold">
+                              <span className="bg-apple-purple text-white px-2 py-1 rounded-full text-xs font-medium">
                                 {item.qualityScore?.overallScore || 0}
                               </span>
-                              <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                item.sentiment === 'positive' ? 'bg-green-600 text-white' :
-                                item.sentiment === 'negative' ? 'bg-red-600 text-white' :
-                                'bg-gray-600 text-gray-300'
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                item.sentiment === 'positive' ? 'bg-apple-green text-white' :
+                                item.sentiment === 'negative' ? 'bg-apple-red text-white' :
+                                'bg-apple-gray-300 text-apple-gray-700'
                               }`}>
                                 {item.sentiment || 'neutral'}
                               </span>
                             </div>
                           </div>
                           
-                          <p className="text-sm text-gray-300 line-clamp-2 mb-2">
+                          <p className="text-sm text-apple-gray-700 line-clamp-2 mb-3">
                             {item.content?.substring(0, 120)}...
                           </p>
                           
                           {item.extractedEntities && (
-                            <div className="flex flex-wrap gap-1 text-xs">
+                            <div className="flex flex-wrap gap-1 text-xs mb-2">
                               {item.extractedEntities.people?.slice(0, 3).map((person: string, i: number) => (
-                                <span key={i} className="bg-blue-700 text-blue-200 px-1 py-0.5 rounded">👤 {person}</span>
+                                <span key={i} className="bg-apple-blue bg-opacity-10 text-apple-blue px-2 py-1 rounded-full">👤 {person}</span>
                               ))}
                               {item.extractedEntities.places?.slice(0, 2).map((place: string, i: number) => (
-                                <span key={i} className="bg-green-700 text-green-200 px-1 py-0.5 rounded">📍 {place}</span>
+                                <span key={i} className="bg-apple-green bg-opacity-10 text-apple-green px-2 py-1 rounded-full">📍 {place}</span>
                               ))}
                               {item.extractedEntities.musicTerms?.slice(0, 2).map((term: string, i: number) => (
-                                <span key={i} className="bg-purple-700 text-purple-200 px-1 py-0.5 rounded">🎵 {term}</span>
+                                <span key={i} className="bg-apple-purple bg-opacity-10 text-apple-purple px-2 py-1 rounded-full">🎵 {term}</span>
                               ))}
                             </div>
                           )}
                           
                           {item.qualityScore?.reasons && (
-                            <div className="mt-2 text-xs text-gray-400">
+                            <div className="mt-2 text-xs text-apple-gray-500">
                               Quality: {item.qualityScore.reasons.slice(0, 2).join(', ')}
                             </div>
                           )}
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-6">
-                        <p className="text-gray-400">No high-quality content discovered yet.</p>
+                      <div className="text-center py-8">
+                        <p className="text-apple-gray-500 mb-4">No high-quality content discovered yet.</p>
                         <button
                           onClick={startAdvancedMonitoring}
-                          className="mt-2 bg-purple-600 text-white px-3 py-2 rounded font-bold hover:bg-purple-700 text-sm"
+                          className="bg-apple-purple text-white px-4 py-2 rounded-xl font-medium hover:bg-opacity-90 text-sm transition-all duration-200"
                         >
                           Start Advanced Monitoring
                         </button>
@@ -699,9 +709,10 @@ const ScraperPanel: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 bg-gray-700 rounded">
-                <p className="text-gray-400 mb-4">Advanced scraping features are not yet initialized.</p>
-                <p className="text-sm text-gray-500">
+              <div className="text-center py-8 bg-white rounded-2xl shadow-card border border-apple-gray-300">
+                <div className="text-4xl mb-4">🚀</div>
+                <p className="text-apple-gray-700 mb-2 font-medium">Advanced scraping features are not yet initialized.</p>
+                <p className="text-sm text-apple-gray-500">
                   Advanced features include RSS monitoring, API integrations, content quality scoring, and real-time discovery.
                 </p>
               </div>

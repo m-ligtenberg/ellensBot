@@ -2,6 +2,7 @@ import express from 'express';
 import { Request, Response } from 'express';
 import { webScraper, ScrapingTarget } from '../services/webScraper';
 import { advancedScraper } from '../services/advancedScraper';
+import { mlSourceDiscovery } from '../services/mlSourceDiscovery';
 import * as cron from 'node-cron';
 
 const router = express.Router();
@@ -650,6 +651,238 @@ router.get('/advanced/ml-insights', async (req: Request, res: Response) => {
     });
     return;
   }
+});
+
+// ===== ML-POWERED SOURCE DISCOVERY ENDPOINTS =====
+
+// Start ML-powered automatic source discovery
+router.post('/ml/discovery/start', async (req: Request, res: Response) => {
+  try {
+    const { intervalMinutes } = req.body;
+    
+    await mlSourceDiscovery.startAutomaticDiscovery(intervalMinutes || 60);
+    
+    res.json({
+      success: true,
+      message: `Started ML-powered source discovery (${intervalMinutes || 60} minute intervals)`,
+      data: mlSourceDiscovery.getDiscoveryStats()
+    });
+  } catch (error) {
+    console.error('❌ Failed to start ML discovery:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to start ML discovery'
+    });
+  }
+  return;
+});
+
+// Stop ML-powered discovery
+router.post('/ml/discovery/stop', async (req: Request, res: Response) => {
+  try {
+    mlSourceDiscovery.stopAutomaticDiscovery();
+    
+    res.json({
+      success: true,
+      message: 'Stopped ML-powered source discovery',
+      data: mlSourceDiscovery.getDiscoveryStats()
+    });
+  } catch (error) {
+    console.error('❌ Failed to stop ML discovery:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to stop ML discovery'
+    });
+  }
+  return;
+});
+
+// Get ML discovery statistics
+router.get('/ml/discovery/stats', async (req: Request, res: Response) => {
+  try {
+    const stats = mlSourceDiscovery.getDiscoveryStats();
+    
+    res.json({
+      success: true,
+      data: {
+        ...stats,
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to get ML discovery stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get ML discovery stats'
+    });
+  }
+  return;
+});
+
+// Get discovered sources
+router.get('/ml/discovery/sources', async (req: Request, res: Response) => {
+  try {
+    const sources = mlSourceDiscovery.getDiscoveredSources();
+    const limit = parseInt(req.query.limit as string) || 20;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const minRelevance = parseFloat(req.query.minRelevance as string) || 0;
+    
+    const filteredSources = sources
+      .filter(source => source.relevanceScore >= minRelevance)
+      .slice(offset, offset + limit);
+    
+    res.json({
+      success: true,
+      data: {
+        sources: filteredSources,
+        total: sources.length,
+        filtered: sources.filter(s => s.relevanceScore >= minRelevance).length,
+        limit,
+        offset,
+        hasMore: offset + limit < sources.length
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to get discovered sources:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get discovered sources'
+    });
+  }
+  return;
+});
+
+// Test discovery for a specific search term
+router.post('/ml/discovery/test', async (req: Request, res: Response) => {
+  try {
+    const { searchTerm } = req.body;
+    
+    if (!searchTerm) {
+      return res.status(400).json({
+        success: false,
+        message: 'searchTerm is required'
+      });
+    }
+
+    console.log(`🧪 Testing ML discovery for: ${searchTerm}`);
+    const results = await mlSourceDiscovery.testDiscoveryForTerm(searchTerm);
+    
+    res.json({
+      success: true,
+      message: `Discovery test completed for: ${searchTerm}`,
+      data: {
+        searchTerm,
+        results,
+        count: results.length,
+        averageRelevance: results.length > 0 
+          ? Math.round((results.reduce((sum, r) => sum + r.relevanceScore, 0) / results.length) * 100) / 100
+          : 0
+      }
+    });
+  } catch (error) {
+    console.error('❌ ML discovery test failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ML discovery test failed'
+    });
+  }
+  return;
+});
+
+// Convert discovered sources to scraping targets
+router.post('/ml/discovery/convert-to-targets', async (req: Request, res: Response) => {
+  try {
+    const targets = await mlSourceDiscovery.convertDiscoveredSourcesToTargets();
+    
+    // Add discovered targets to the main scraper
+    let addedCount = 0;
+    for (const target of targets) {
+      try {
+        webScraper.addScrapingTarget(target);
+        addedCount++;
+      } catch (error) {
+        console.warn(`Failed to add target: ${target.name}`, error);
+      }
+    }
+    
+    res.json({
+      success: true,
+      message: `Converted ${addedCount} discovered sources to scraping targets`,
+      data: {
+        discoveredTargets: targets.length,
+        addedTargets: addedCount,
+        skippedTargets: targets.length - addedCount,
+        targets: targets.map(t => ({
+          name: t.name,
+          domain: new URL(t.baseUrl).hostname,
+          type: t.type,
+          keywords: t.keywords
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to convert discovered sources:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to convert discovered sources'
+    });
+  }
+  return;
+});
+
+// Get ML insights and recommendations
+router.get('/ml/discovery/insights', async (req: Request, res: Response) => {
+  try {
+    const stats = mlSourceDiscovery.getDiscoveryStats();
+    const sources = mlSourceDiscovery.getDiscoveredSources();
+    
+    // Generate insights
+    const insights = {
+      discoveryEffectiveness: {
+        totalSources: stats.totalSourcesDiscovered,
+        highQualitySources: sources.filter(s => s.relevanceScore > 0.7).length,
+        averageQuality: stats.averageRelevanceScore,
+        recommendation: stats.averageRelevanceScore > 0.6 
+          ? 'Discovery is performing well. Consider increasing scan frequency.'
+          : 'Discovery quality could be improved. Review search patterns.'
+      },
+      contentTypeInsights: {
+        distribution: stats.contentTypeDistribution,
+        recommendation: Object.entries(stats.contentTypeDistribution)
+          .sort((a, b) => (b[1] as number) - (a[1] as number))[0]
+          ? `Focus on ${Object.entries(stats.contentTypeDistribution).sort((a, b) => (b[1] as number) - (a[1] as number))[0][0]} content for best results`
+          : 'No content type preference detected yet'
+      },
+      topPerformingDomains: {
+        domains: stats.topDomains,
+        recommendation: stats.topDomains.length > 0
+          ? `Consider creating targeted scrapers for: ${stats.topDomains.slice(0, 3).map((d: any) => d.domain).join(', ')}`
+          : 'Not enough data for domain recommendations yet'
+      },
+      nextActions: [
+        stats.totalSourcesDiscovered > 10 ? 'Convert top sources to scraping targets' : 'Continue discovery to build source database',
+        stats.isScanning ? 'Monitor discovery performance' : 'Start automatic discovery',
+        'Review and validate high-relevance sources manually'
+      ]
+    };
+    
+    res.json({
+      success: true,
+      data: {
+        ...insights,
+        timestamp: new Date().toISOString(),
+        generatedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to get ML insights:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get ML insights'
+    });
+  }
+  return;
 });
 
 export default router;

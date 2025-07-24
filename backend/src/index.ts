@@ -15,6 +15,7 @@ import adminRoutes from './routes/admin';
 import scraperRoutes from './routes/scraper';
 import submissionsRoutes from './routes/submissions';
 import advancedMLRoutes from './routes/advancedML';
+import personalityRoutes from './routes/personality';
 
 // Import services
 import { initializeWebSocketService } from './services/websocketService';
@@ -50,7 +51,20 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use('/api/', limiter);
+// Apply rate limiting to most routes but be more lenient for development
+if (environmentConfig.isProduction()) {
+  app.use('/api/', limiter);
+} else {
+  // More lenient rate limiting for development
+  const devLimiter = rateLimit({
+    windowMs: 1000 * 60, // 1 minute
+    max: 500, // 500 requests per minute in development
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use('/api/', devLimiter);
+}
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -64,6 +78,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/scraper', scraperRoutes);
 app.use('/api/submissions', submissionsRoutes);
 app.use('/api/ml', advancedMLRoutes);
+app.use('/api/personality', personalityRoutes);
 
 // Socket.io setup
 const io = new Server(server, {

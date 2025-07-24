@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../../types';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
+import { useAIStatus } from '../../hooks/useAIStatus';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -29,6 +30,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [inputMessage, setInputMessage] = useState('');
   // const [isUserTyping, setIsUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { aiStatus, getStatusInfo } = useAIStatus();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,61 +57,75 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl h-[80vh] flex flex-col bg-gray-800 rounded-lg shadow-2xl border border-gray-700 overflow-hidden">
-        {/* Enhanced Header */}
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 border-b border-accent-green/30 p-4 rounded-t-lg">
+    <div className="w-full h-[80vh] flex flex-col bg-white rounded-2xl shadow-card border border-apple-gray-300 overflow-hidden">
+        {/* Clean Header */}
+        <div className="bg-apple-gray-50 border-b border-apple-gray-300 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-accent-green truncate flex items-center">
+              <h1 className="text-2xl font-semibold text-apple-gray-900 truncate flex items-center">
                 🎤 Young Ellens Bot
-                <span className="ml-2 text-xs bg-accent-green text-black px-2 py-1 rounded-full font-normal">
+                <span className="ml-3 text-xs bg-apple-orange text-white px-3 py-1 rounded-full font-medium">
                   Mr. Cocaine
                 </span>
               </h1>
-              <p className="text-sm text-gray-300 mt-1 truncate flex items-center">
-                {connectionError ? (
-                  <span className="text-red-400 flex items-center">
-                    ❌ Connection Error
-                    <button 
-                      onClick={onRetryConnection}
-                      className="ml-2 text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-                    >
-                      Retry
-                    </button>
-                  </span>
-                ) : !isConnected ? (
-                  <span className="text-yellow-400 flex items-center">
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-400 mr-2"></div>
-                    Connecting...
-                  </span>
-                ) : isEllensTyping ? (
-                  <span className="text-accent-green flex items-center">
-                    <div className="flex space-x-1 mr-2">
-                      <div className="w-1 h-1 bg-accent-green rounded-full animate-bounce"></div>
-                      <div className="w-1 h-1 bg-accent-green rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-1 h-1 bg-accent-green rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-sm text-apple-gray-600 truncate flex items-center">
+                  {connectionError ? (
+                    <span className="text-apple-red flex items-center">
+                      ❌ Connection Error
+                      <button 
+                        onClick={onRetryConnection}
+                        className="ml-2 text-xs bg-apple-red hover:bg-opacity-90 text-white px-3 py-1 rounded-full transition-all duration-200"
+                      >
+                        Retry
+                      </button>
+                    </span>
+                  ) : !isConnected ? (
+                    <span className="text-apple-orange flex items-center">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-apple-orange mr-2"></div>
+                      Connecting...
+                    </span>
+                  ) : isEllensTyping ? (
+                    <span className="text-apple-green flex items-center">
+                      <div className="flex space-x-1 mr-2">
+                        <div className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce"></div>
+                        <div className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      </div>
+                      Ellens is {ellensTypingMood}...
+                    </span>
+                  ) : (
+                    <span className="text-apple-green flex items-center">
+                      <div className="w-2 h-2 bg-apple-green rounded-full mr-2"></div>
+                      Online • "Alleen me wietje en me henny"
+                    </span>
+                  )}
+                </p>
+                
+                {/* AI Status Indicator */}
+                {(() => {
+                  const statusInfo = getStatusInfo();
+                  if (!statusInfo) return null;
+                  
+                  return (
+                    <div className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-apple-gray-200 border border-apple-gray-300">
+                      <span>{statusInfo.icon}</span>
+                      <span className="text-apple-gray-700">{statusInfo.status}</span>
                     </div>
-                    Ellens is {ellensTypingMood}...
-                  </span>
-                ) : (
-                  <span className="text-green-400 flex items-center">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-                    Online • "Alleen me wietje en me henny"
-                  </span>
-                )}
-              </p>
+                  );
+                })()}
+              </div>
             </div>
-            <div className="flex items-center space-x-2 ml-2">
+            <div className="flex items-center space-x-3 ml-4">
               <div className={`w-3 h-3 rounded-full ${
                 isConnected && !connectionError 
-                  ? 'bg-green-400' 
-                  : 'bg-red-500'
+                  ? 'bg-apple-green' 
+                  : 'bg-apple-red'
               }`} />
               {connectionError && onRetryConnection && (
                 <button 
                   onClick={onRetryConnection}
-                  className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors"
+                  className="text-xs bg-apple-green hover:bg-opacity-90 text-white px-3 py-1 rounded-full transition-all duration-200"
                 >
                   Retry
                 </button>
@@ -119,10 +135,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && (
-            <div className="text-center text-gray-400 py-8">
-              <p className="text-sm">Start chatting with Young Ellens...</p>
+            <div className="text-center text-apple-gray-500 py-12">
+              <div className="text-5xl mb-4">🎤</div>
+              <p className="text-lg font-medium text-apple-gray-900 mb-2">Start chatting with Young Ellens...</p>
+              <p className="text-sm text-apple-gray-600">Hij zit klaar om te praten! 💬</p>
             </div>
           )}
         
@@ -142,7 +160,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
 
         {/* Input Area */}
-        <div className="bg-gray-900 border-t border-gray-600 p-4 rounded-b-lg">
+        <div className="bg-apple-gray-50 border-t border-apple-gray-300 p-4 rounded-b-2xl">
           <form onSubmit={handleSendMessage} className="flex gap-3">
             <input
               type="text"
@@ -150,19 +168,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               onChange={handleInputChange}
               placeholder={!isConnected ? "Connecting..." : connectionError ? "Connection error..." : "Type a message..."}
               disabled={!isConnected || !!connectionError}
-              className="flex-1 bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 disabled:opacity-50"
+              className="flex-1 bg-white text-apple-gray-900 border border-apple-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-apple-blue focus:ring-2 focus:ring-apple-blue focus:ring-opacity-20 disabled:opacity-50 transition-all duration-200"
               maxLength={500}
             />
             <button
               type="submit"
               disabled={!inputMessage.trim() || !isConnected || !!connectionError}
-              className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-apple-blue text-white px-6 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               Send
             </button>
           </form>
         </div>
-      </div>
     </div>
   );
 };

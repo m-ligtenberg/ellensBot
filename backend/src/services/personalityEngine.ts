@@ -3,6 +3,7 @@ import { PersonalityPatterns } from './personalityPatterns';
 import { contextMemory } from './contextMemory';
 import { PersonalityScoring } from './personalityScoring';
 import { contentLearning } from './contentLearning';
+import { Database } from '../database/connection';
 
 export interface EllensPersonalityState {
   denialMode: boolean;
@@ -25,9 +26,14 @@ export interface EllensResponse {
 
 export class EllensPersonalityEngine {
   private conversations: Map<string, EllensPersonalityState> = new Map();
+  private db: Database;
+  private approvedContentCache: Map<string, any[]> = new Map();
+  private lastCacheUpdate = 0;
+  private cacheTimeout = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
     // AI service is now handled by the singleton aiService
+    this.db = Database.getInstance();
   }
 
   initializeConversation(conversationId: string): void {
@@ -84,7 +90,7 @@ export class EllensPersonalityEngine {
 
     try {
       // Generate contextual system prompt with conversation memory
-      const basePrompt = this.getSystemPrompt(state.currentMood, state.chaosLevel);
+      const basePrompt = await this.getSystemPrompt(state.currentMood, state.chaosLevel);
       const enhancedPrompt = contextMemory.generateContextualPrompt(userId, conversationId, basePrompt);
       
       // Generate response using AI service with enhanced context
@@ -120,6 +126,9 @@ export class EllensPersonalityEngine {
 
       // Update state after response
       this.updateStateAfterResponse(state, enhancedText);
+
+      // Track usage of approved community content
+      await this.trackContentUsage(enhancedText);
 
       return response;
 
@@ -350,8 +359,42 @@ export class EllensPersonalityEngine {
     return enhanced;
   }
 
+  // Fetch approved content from database with caching
+  private async getApprovedContent(mood: string, chaosLevel: number): Promise<any[]> {
+    const now = Date.now();
+    const cacheKey = `${mood}-${Math.floor(chaosLevel / 20) * 20}`; // Cache by mood and chaos range
+    
+    // Check cache
+    if (this.approvedContentCache.has(cacheKey) && (now - this.lastCacheUpdate) < this.cacheTimeout) {
+      return this.approvedContentCache.get(cacheKey) || [];
+    }
+    
+    try {
+      const result = await this.db.query(`
+        SELECT ac.*, us.submitted_text, us.context_description
+        FROM approved_content ac
+        JOIN user_submissions us ON ac.submission_id = us.id
+        WHERE ac.is_active = 1
+          AND ac.chaos_level_min <= $1 
+          AND ac.chaos_level_max >= $1
+          AND (ac.mood_requirement IS NULL OR ac.mood_requirement = $2)
+        ORDER BY ac.weight DESC, RANDOM()
+        LIMIT 10
+      `, [chaosLevel, mood]);
+      
+      const content = result.rows || [];
+      this.approvedContentCache.set(cacheKey, content);
+      this.lastCacheUpdate = now;
+      
+      return content;
+    } catch (error) {
+      console.warn('Failed to fetch approved content:', error);
+      return [];
+    }
+  }
+
   // Generate contextual system prompt
-  private getSystemPrompt(mood: string, chaosLevel: number): string {
+  private async getSystemPrompt(mood: string, chaosLevel: number): Promise<string> {
     let basePrompt = `Je bent Young Ellens - iedereen noemt je Mr. Cocaine maar je ONTKENT het altijd. 
 Je zegt constant "Nooo man ik ben daar niet op, alleen me wietje en me henny" 
 maar ondertussen weet je ALLES over drugs en laat je per ongeluk dingen slippen.
@@ -369,6 +412,35 @@ Signature phrase: "alleen me wietje en me henny"
 Current mood: ${mood}
 Chaos level: ${chaosLevel}/100`;
 
+    // Add community-approved content
+    const approvedContent = await this.getApprovedContent(mood, chaosLevel);
+    if (approvedContent.length > 0) {
+      basePrompt += `\n\nCommunity-approved phrases you can use:`;
+      
+      const denials = approvedContent.filter(c => c.content_type === 'denial');
+      const phrases = approvedContent.filter(c => c.content_type === 'phrase');
+      const slang = approvedContent.filter(c => c.content_type === 'slang');
+      const interruptions = approvedContent.filter(c => c.content_type === 'interruption');
+      
+      if (denials.length > 0) {
+        basePrompt += `\nDrug denials: ${denials.map(c => `"${c.submitted_text}"`).slice(0, 3).join(', ')}`;
+      }
+      
+      if (phrases.length > 0) {
+        basePrompt += `\nCasual phrases: ${phrases.map(c => `"${c.submitted_text}"`).slice(0, 3).join(', ')}`;
+      }
+      
+      if (slang.length > 0) {
+        basePrompt += `\nSlang expressions: ${slang.map(c => `"${c.submitted_text}"`).slice(0, 3).join(', ')}`;
+      }
+      
+      if (interruptions.length > 0) {
+        basePrompt += `\nInterruption phrases: ${interruptions.map(c => `"${c.submitted_text}"`).slice(0, 2).join(', ')}`;
+      }
+      
+      basePrompt += `\n\nUse these community suggestions naturally when they fit the conversation context.`;
+    }
+
     // Add mood-specific instructions
     if (mood === 'chaotic' && chaosLevel > 70) {
       basePrompt += `\n\nYou're feeling very chaotic right now! Be more erratic, use more emphasis, and consider interrupting mid-thought.`;
@@ -377,6 +449,44 @@ Chaos level: ${chaosLevel}/100`;
     }
     
     return basePrompt;
+  }
+
+  // Track usage of approved content
+  private async trackContentUsage(responseText: string): Promise<void> {
+    try {
+      // Get all approved content
+      const result = await this.db.query(`
+        SELECT us.submission_id, us.submitted_text, ac.id as content_id
+        FROM approved_content ac
+        JOIN user_submissions us ON ac.submission_id = us.id
+        WHERE ac.is_active = 1
+      `);
+      
+      const approvedContent = result.rows || [];
+      
+      // Check if any approved content was used in the response
+      for (const content of approvedContent) {
+        const submittedText = content.submitted_text.toLowerCase().trim();
+        const responseTextLower = responseText.toLowerCase();
+        
+        // Simple fuzzy matching - check if most words from submission appear in response
+        const submittedWords = submittedText.split(/\s+/).filter((word: string) => word.length > 2);
+        const matchedWords = submittedWords.filter((word: string) => responseTextLower.includes(word));
+        
+        // If more than 60% of words match, consider it used
+        if (matchedWords.length > 0 && (matchedWords.length / submittedWords.length) > 0.6) {
+          await this.db.query(`
+            UPDATE user_submissions 
+            SET times_used = times_used + 1, last_used_at = CURRENT_TIMESTAMP
+            WHERE submission_id = $1
+          `, [content.submission_id]);
+          
+          console.log(`📝 Used community content: "${content.submitted_text}"`);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to track content usage:', error);
+    }
   }
 
   // Get analytics data for dashboard

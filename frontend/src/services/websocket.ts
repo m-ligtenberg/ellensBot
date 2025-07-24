@@ -21,6 +21,7 @@ interface ClientToServerEvents {
   send_message: (data: { message: string; conversationId?: string }) => void;
   user_typing: (data: { isTyping: boolean }) => void;
   join_conversation: (data: { conversationId: string }) => void;
+  add_reaction: (data: { messageId: string; emoji: string }) => void;
 }
 
 export class WebSocketService {
@@ -95,6 +96,12 @@ export class WebSocketService {
     this.conversationId = conversationId;
     if (this.socket?.connected) {
       this.socket.emit('join_conversation', { conversationId });
+    }
+  }
+
+  sendReaction(messageId: string, emoji: string): void {
+    if (this.socket?.connected) {
+      this.socket.emit('add_reaction', { messageId, emoji });
     }
   }
 

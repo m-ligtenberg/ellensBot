@@ -43,6 +43,22 @@ export const useWebSocketChat = () => {
     }
   }, [isConnected]);
 
+  const addReaction = useCallback((messageId: string, emoji: string) => {
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        const reactions = { ...msg.reactions } || {};
+        reactions[emoji] = (reactions[emoji] || 0) + 1;
+        return { ...msg, reactions };
+      }
+      return msg;
+    }));
+    
+    // Send reaction to server (if connected)
+    if (isConnected) {
+      websocketService.sendReaction(messageId, emoji);
+    }
+  }, [isConnected]);
+
   // Initialize WebSocket connection
   useEffect(() => {
     let isMounted = true;
@@ -148,6 +164,7 @@ export const useWebSocketChat = () => {
     connectionError,
     sendMessage,
     setUserTyping,
-    retryConnection
+    retryConnection,
+    addReaction
   };
 };

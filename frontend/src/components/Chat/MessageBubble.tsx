@@ -1,11 +1,13 @@
 import React from 'react';
 import { Message } from '../../types';
+import EmojiReactions from './EmojiReactions';
 
 interface MessageBubbleProps {
   message: Message;
+  onReact?: (messageId: string, emoji: string) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReact }) => {
   const isEllens = message.sender === 'ellens';
   const isUser = message.sender === 'user';
 
@@ -112,6 +114,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                 🎤 STUDIO TALK
               </span>
             )}
+          </div>
+        )}
+        
+        {/* Emoji Reactions */}
+        {onReact && (
+          <div className="mt-2">
+            <EmojiReactions
+              messageId={message.id}
+              reactions={message.reactions}
+              onReact={onReact}
+            />
           </div>
         )}
       </div>

@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 dotenv.config();
 import rateLimit from 'express-rate-limit';
+import { env, environmentConfig } from './config/environment';
 
 // Import routes
 import chatRoutes from './routes/chat';
@@ -12,6 +13,7 @@ import healthRoutes from './routes/health';
 import analyticsRoutes from './routes/analytics';
 import adminRoutes from './routes/admin';
 import scraperRoutes from './routes/scraper';
+import submissionsRoutes from './routes/submissions';
 
 // Import services
 import { initializeWebSocketService } from './services/websocketService';
@@ -28,7 +30,8 @@ const corsOptions = {
     'http://localhost:3000',
     'https://michligtenberg.nl',
     'https://www.michligtenberg.nl',
-    process.env.FRONTEND_URL
+    'https://m-ligtenberg.github.io',
+    env.FRONTEND_URL
   ].filter((url): url is string => Boolean(url)),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -39,8 +42,8 @@ app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+  windowMs: env.RATE_LIMIT_WINDOW_MS,
+  max: env.RATE_LIMIT_MAX_REQUESTS,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -58,6 +61,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/scraper', scraperRoutes);
+app.use('/api/submissions', submissionsRoutes);
 
 // Socket.io setup
 const io = new Server(server, {
@@ -73,7 +77,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   console.error('Error:', err);
   res.status(500).json({
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: environmentConfig.isDevelopment() ? err.message : 'Something went wrong'
   });
 });
 
@@ -82,7 +86,7 @@ app.use('*', (req: express.Request, res: express.Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = env.PORT;
 
 // Initialize database and start server
 async function startServer() {
@@ -92,12 +96,16 @@ async function startServer() {
     
     // Start server
     server.listen(PORT, () => {
-console.log("DEBUG: OPENAI API KEY = ", process.env.OPENAI_API_KEY);
-
       console.log(`🎤 Young Ellens Backend server running on port ${PORT}`);
       console.log(`📡 WebSocket server initialized`);
-      console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+      console.log(`🌐 CORS enabled for: ${env.FRONTEND_URL}`);
       console.log(`💾 Database initialization completed`);
+      
+      // Display API configuration status
+      const aiKeys = environmentConfig.hasAIKeys();
+      console.log(`🤖 AI Configuration: ${aiKeys.any ? '✅ Ready' : '⚠️ Fallback only'}`);
+      if (aiKeys.openai) console.log('  - OpenAI: ✅ Available');
+      if (aiKeys.claude) console.log('  - Claude: ✅ Available');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

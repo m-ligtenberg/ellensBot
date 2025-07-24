@@ -60,6 +60,80 @@ export class SQLiteDatabase {
         )
       `);
 
+      // User submissions tables for community content
+      await this.query(`
+        CREATE TABLE IF NOT EXISTS user_submissions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          submission_id TEXT UNIQUE NOT NULL,
+          user_session_id TEXT,
+          submission_type TEXT NOT NULL CHECK (submission_type IN ('phrase', 'response', 'denial', 'interruption', 'slang')),
+          submitted_text TEXT NOT NULL,
+          context_description TEXT,
+          category TEXT,
+          submission_status TEXT DEFAULT 'pending' CHECK (submission_status IN ('pending', 'approved', 'rejected', 'flagged')),
+          admin_notes TEXT,
+          reviewed_by TEXT,
+          reviewed_at DATETIME,
+          upvotes INTEGER DEFAULT 0,
+          downvotes INTEGER DEFAULT 0,
+          quality_score REAL,
+          ellens_appropriateness_score REAL,
+          times_used INTEGER DEFAULT 0,
+          effectiveness_score REAL,
+          last_used_at DATETIME,
+          is_featured INTEGER DEFAULT 0,
+          is_offensive INTEGER DEFAULT 0,
+          auto_flagged INTEGER DEFAULT 0,
+          flag_reason TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      await this.query(`
+        CREATE TABLE IF NOT EXISTS submission_reviews (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          submission_id INTEGER,
+          admin_session_id TEXT,
+          action TEXT NOT NULL CHECK (action IN ('approve', 'reject', 'flag', 'unflag', 'feature', 'unfeature')),
+          reason TEXT,
+          previous_status TEXT,
+          new_status TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (submission_id) REFERENCES user_submissions (id)
+        )
+      `);
+
+      await this.query(`
+        CREATE TABLE IF NOT EXISTS approved_content (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          submission_id INTEGER,
+          content_type TEXT NOT NULL,
+          trigger_keywords TEXT,
+          response_text TEXT NOT NULL,
+          context_rules TEXT,
+          mood_requirement TEXT,
+          chaos_level_min INTEGER DEFAULT 0,
+          chaos_level_max INTEGER DEFAULT 100,
+          weight REAL DEFAULT 1.0,
+          is_active INTEGER DEFAULT 1,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (submission_id) REFERENCES user_submissions (id)
+        )
+      `);
+
+      await this.query(`
+        CREATE TABLE IF NOT EXISTS submission_votes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          submission_id INTEGER,
+          user_session_id TEXT NOT NULL,
+          vote_type TEXT NOT NULL CHECK (vote_type IN ('up', 'down', 'report')),
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (submission_id) REFERENCES user_submissions (id),
+          UNIQUE(submission_id, user_session_id)
+        )
+      `);
+
       console.log('✅ SQLite tables initialized');
     } catch (error) {
       console.error('❌ Failed to initialize SQLite tables:', error);

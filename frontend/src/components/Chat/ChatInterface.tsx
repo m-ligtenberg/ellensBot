@@ -7,6 +7,7 @@ interface ChatInterfaceProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
   onUserTyping?: (isTyping: boolean) => void;
+  onReact?: (messageId: string, emoji: string) => void;
   isEllensTyping: boolean;
   ellensTypingMood?: string;
   isConnected?: boolean;
@@ -18,6 +19,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   messages,
   onSendMessage,
   onUserTyping,
+  onReact,
   isEllensTyping,
   ellensTypingMood = 'chill',
   isConnected = true,
@@ -101,7 +103,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           )}
         
           {messages.map((message, index) => (
-            <MessageBubble key={message.id} message={message} />
+            <MessageBubble 
+              key={message.id} 
+              message={message} 
+              onReact={onReact}
+            />
           ))}
         
           {isEllensTyping && (

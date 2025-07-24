@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ChatInterface from './components/Chat/ChatInterface';
 import AdminPanel from './components/Admin/AdminPanel';
+import SubmissionForm from './components/Chat/SubmissionForm';
 import { useWebSocketChat } from './hooks/useWebSocketChat';
 
 function App() {
+  const [isSubmissionFormOpen, setIsSubmissionFormOpen] = useState(false);
+  
   const { 
     messages, 
     isEllensTyping, 
@@ -12,7 +15,8 @@ function App() {
     connectionError, 
     sendMessage, 
     setUserTyping, 
-    retryConnection 
+    retryConnection,
+    addReaction
   } = useWebSocketChat();
 
   const handleContentUpload = async (content: {
@@ -47,13 +51,33 @@ function App() {
         messages={messages}
         onSendMessage={sendMessage}
         onUserTyping={setUserTyping}
+        onReact={addReaction}
         isEllensTyping={isEllensTyping}
         ellensTypingMood={ellensTypingMood}
         isConnected={isConnected}
         connectionError={connectionError}
         onRetryConnection={retryConnection}
       />
+      
+      {/* Floating action button to open submission form */}
+      <button
+        onClick={() => setIsSubmissionFormOpen(true)}
+        className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-colors z-40"
+        title="Teach Ellens new words"
+      >
+        🎤
+      </button>
+      
       <AdminPanel onContentUpload={handleContentUpload} />
+      
+      <SubmissionForm
+        isOpen={isSubmissionFormOpen}
+        onClose={() => setIsSubmissionFormOpen(false)}
+        onSubmissionSuccess={() => {
+          // Maybe show a success message or refresh something
+          console.log('Submission successful!');
+        }}
+      />
     </div>
   );
 }

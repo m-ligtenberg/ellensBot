@@ -5,6 +5,7 @@ export interface Message {
   timestamp: Date;
   mood?: 'chill' | 'chaotic' | 'done';
   chaosLevel?: number;
+  reactions?: Record<string, number>;
 }
 
 export interface Conversation {

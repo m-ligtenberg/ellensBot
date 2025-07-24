@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import ScraperPanel from './ScraperPanel';
+import SubmissionsPanel from './SubmissionsPanel';
 
 interface ContentItem {
   id: string;
@@ -17,7 +18,7 @@ interface AdminPanelProps {
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'upload' | 'content' | 'scraper' | 'analytics'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'content' | 'scraper' | 'submissions' | 'analytics'>('upload');
   const [uploadedContent, setUploadedContent] = useState<ContentItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -111,7 +112,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
 
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-700">
-          {(['upload', 'content', 'scraper', 'analytics'] as const).map((tab) => (
+          {(['upload', 'content', 'scraper', 'submissions', 'analytics'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -122,7 +123,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
               }`}
             >
               {tab === 'upload' && '📤'} {tab === 'content' && '📚'} 
-              {tab === 'scraper' && '🕷️'} {tab === 'analytics' && '📊'} {tab}
+              {tab === 'scraper' && '🕷️'} {tab === 'submissions' && '🚀'} {tab === 'analytics' && '📊'} {tab}
             </button>
           ))}
         </div>
@@ -275,6 +276,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onContentUpload }) => {
           {/* Scraper Tab */}
           {activeTab === 'scraper' && (
             <ScraperPanel />
+          )}
+
+          {/* Submissions Tab */}
+          {activeTab === 'submissions' && (
+            <SubmissionsPanel />
           )}
 
           {/* Analytics Tab */}

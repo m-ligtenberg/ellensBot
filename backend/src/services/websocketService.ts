@@ -49,18 +49,22 @@ export function initializeWebSocketService(io: Server): void {
     // Initialize conversation in personality engine
     personalityEngine.initializeConversation(conversationId);
     
-    // Initialize persistent session
-    try {
-      await chatPersistence.initializeSession(
-        socket.id, 
-        userId, 
-        conversationId,
-        socket.handshake.headers['user-agent'],
-        socket.handshake.address
-      );
-    } catch (error) {
-      console.error('Failed to initialize persistent session:', error);
-      // Continue without persistence
+    // Initialize persistent session (skip for local development)
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        await chatPersistence.initializeSession(
+          socket.id, 
+          userId, 
+          conversationId,
+          socket.handshake.headers['user-agent'],
+          socket.handshake.address
+        );
+      } catch (error) {
+        console.error('Failed to initialize persistent session:', error);
+        // Continue without persistence
+      }
+    } else {
+      console.log('🏠 Skipping database persistence in local development');
     }
 
     // Send welcome message

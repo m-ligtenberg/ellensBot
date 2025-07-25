@@ -72,6 +72,14 @@ class EnvironmentValidator {
     return this.config.NODE_ENV === 'production';
   }
 
+  public isDesktop(): boolean {
+    return process.env.DEPLOYMENT_MODE === 'desktop';
+  }
+
+  public getDeploymentMode(): 'local' | 'production' | 'desktop' {
+    return (process.env.DEPLOYMENT_MODE as 'local' | 'production' | 'desktop') || 'local';
+  }
+
   public hasAIKeys(): { claude: boolean; openai: boolean; any: boolean } {
     return {
       claude: !!this.config.CLAUDE_API_KEY,

@@ -21,7 +21,7 @@ interface AdminPageProps {
 
 const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) => {
   const { isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'content' | 'scraper' | 'submissions' | 'analytics' | 'ml'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'content' | 'scraper' | 'submissions' | 'analytics' | 'ml' | 'discovery'>('dashboard');
   const [uploadedContent, setUploadedContent] = useState<ContentItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -139,7 +139,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
       <div className="bg-apple-gray-50 border-b border-apple-gray-300">
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex space-x-0 overflow-x-auto">
-            {(['dashboard', 'upload', 'content', 'scraper', 'submissions', 'analytics', 'ml'] as const).map((tab) => (
+            {(['dashboard', 'upload', 'content', 'scraper', 'submissions', 'analytics', 'ml', 'discovery'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -152,10 +152,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
                 <span>
                   {tab === 'dashboard' && '🏠'} {tab === 'upload' && '📤'} {tab === 'content' && '📚'} 
                   {tab === 'scraper' && '🕷️'} {tab === 'submissions' && '🚀'} 
-                  {tab === 'analytics' && '📊'} {tab === 'ml' && '🧠'}
+                  {tab === 'analytics' && '📊'} {tab === 'ml' && '🧠'} {tab === 'discovery' && '🤖'}
                 </span>
                 <span>
-                  {tab === 'ml' ? 'ML Controls' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {tab === 'ml' ? 'ML Controls' : tab === 'discovery' ? 'ML Discovery' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </span>
               </button>
             ))}

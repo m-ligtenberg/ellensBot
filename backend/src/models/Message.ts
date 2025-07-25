@@ -61,7 +61,9 @@ export class MessageModel {
 
   static async getConversationMessages(conversationId: number): Promise<Message[]> {
     const result = await db.query(`
-      SELECT * FROM messages 
+      SELECT message_id, conversation_id, sender, message_text, 
+             timestamp, mood, chaos_level, message_type, ellens_state, reactions
+      FROM messages 
       WHERE conversation_id = $1 
       ORDER BY timestamp ASC
     `, [conversationId]);
@@ -71,7 +73,9 @@ export class MessageModel {
 
   static async getRecentMessages(conversationId: number, limit: number = 10): Promise<Message[]> {
     const result = await db.query(`
-      SELECT * FROM messages 
+      SELECT message_id, conversation_id, sender, message_text, 
+             timestamp, mood, chaos_level, message_type, ellens_state, reactions
+      FROM messages 
       WHERE conversation_id = $1 
       ORDER BY timestamp DESC 
       LIMIT $2
@@ -110,7 +114,9 @@ export class MessageModel {
 
   static async getDenialMessages(conversationId: number): Promise<Message[]> {
     const result = await db.query(`
-      SELECT * FROM messages 
+      SELECT message_id, conversation_id, sender, message_text, 
+             timestamp, mood, chaos_level, is_denial
+      FROM messages 
       WHERE conversation_id = $1 AND is_denial = true
       ORDER BY timestamp ASC
     `, [conversationId]);
@@ -120,7 +126,9 @@ export class MessageModel {
 
   static async getInterruptionMessages(conversationId: number): Promise<Message[]> {
     const result = await db.query(`
-      SELECT * FROM messages 
+      SELECT message_id, conversation_id, sender, message_text, 
+             timestamp, mood, chaos_level, is_interruption
+      FROM messages 
       WHERE conversation_id = $1 AND is_interruption = true
       ORDER BY timestamp ASC
     `, [conversationId]);

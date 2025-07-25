@@ -84,6 +84,96 @@ export class PersonalityPatterns {
     return responses[Math.floor(Math.random() * responses.length)];
   }
 
+  // Advanced drug reference detection with context sensitivity
+  static detectDrugReference(message: string): { detected: boolean; type: string; confidence: number; terms: string[] } {
+    const lowerMessage = message.toLowerCase();
+    const detectedTerms: string[] = [];
+    let type = 'unknown';
+    let confidence = 0;
+    
+    // Check for cocaine references
+    const cocaineTerms = this.DUTCH_SLANG.drugs;
+    const cocaineMatches = cocaineTerms.filter(term => lowerMessage.includes(term.toLowerCase()));
+    if (cocaineMatches.length > 0) {
+      type = 'cocaine';
+      confidence = Math.min(cocaineMatches.length * 0.4 + 0.3, 1.0);
+      detectedTerms.push(...cocaineMatches);
+    }
+    
+    // Check for direct questions/accusations
+    const directQuestions = [
+      'gebruik je', 'doe je aan', 'ben je op', 'neem je', 'deal je', 'verkoop je',
+      'heb je', 'ken je dealers', 'where can i', 'how much', 'hoeveel kost'
+    ];
+    
+    const hasDirectQuestion = directQuestions.some(q => lowerMessage.includes(q));
+    if (hasDirectQuestion && cocaineMatches.length > 0) {
+      confidence = Math.min(confidence + 0.3, 1.0);
+    }
+    
+    // Context patterns that increase confidence
+    const contextPatterns = [
+      'mr cocaine', 'mr. cocaine', 'cocaine ellens', 'young ellens drugs',
+      'waarom noemen ze je', 'why do they call you', 'nickname'
+    ];
+    
+    const hasContext = contextPatterns.some(pattern => lowerMessage.includes(pattern));
+    if (hasContext) confidence = Math.min(confidence + 0.2, 1.0);
+    
+    return {
+      detected: detectedTerms.length > 0 || hasDirectQuestion,
+      type,
+      confidence,
+      terms: detectedTerms
+    };
+  }
+
+  // Enhanced interruption trigger detection
+  static shouldTriggerInterruption(message: string, messageCount: number, chaosLevel: number): { should: boolean; reason: string; probability: number } {
+    const lowerMessage = message.toLowerCase();
+    let probability = 0;
+    let reason = '';
+    
+    // Base probability from chaos level
+    probability = chaosLevel * 0.002; // 0-0.2 base probability
+    
+    // Long messages trigger interruptions more
+    if (message.length > 100) {
+      probability += 0.15;
+      reason = 'long message';
+    }
+    
+    // Boring topics trigger interruptions
+    const boringTopics = [
+      'school', 'werk', 'job', 'study', 'university', 'homework', 'assignment',
+      'serious', 'important', 'responsibility', 'adult', 'professional'
+    ];
+    
+    const hasBoring = boringTopics.some(topic => lowerMessage.includes(topic));
+    if (hasBoring) {
+      probability += 0.25;
+      reason = 'boring topic';
+    }
+    
+    // Repetitive questions increase interruption chance
+    if (messageCount > 5 && (message.includes('?') || message.includes('wat') || message.includes('how'))) {
+      probability += 0.1;
+      reason = 'repetitive questioning';
+    }
+    
+    // Random chaos trigger
+    if (Math.random() < 0.1) {
+      probability += 0.15;
+      reason = 'random chaos';
+    }
+    
+    return {
+      should: Math.random() < probability,
+      reason,
+      probability
+    };
+  }
+
   // Knowledge slip patterns - accidentally revealing drug knowledge with street vocabulary
   static getKnowledgeSlip(): string {
     const slips = [

@@ -2,6 +2,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '../database/connection';
+import { localSubmissionStorage } from '../services/localSubmissionStorage';
 import { 
   CreateSubmissionRequest, 
   ReviewSubmissionRequest, 
@@ -88,35 +89,65 @@ router.post('/submit', async (req, res): Promise<void> => {
     const submission_id = uuidv4();
     const session_id = user_session_id || req.ip || 'anonymous';
 
-    await db.query(`
-      INSERT INTO user_submissions (
-        submission_id, user_session_id, submission_type, 
-        submitted_text, context_description, category
-      ) VALUES ($1, $2, $3, $4, $5, $6)
-    `, [submission_id, session_id, submission_type, submitted_text, context_description, category]);
+    // Skip database operations in local development
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        await db.query(`
+          INSERT INTO user_submissions (
+            submission_id, user_session_id, submission_type, 
+            submitted_text, context_description, category
+          ) VALUES ($1, $2, $3, $4, $5, $6)
+        `, [submission_id, session_id, submission_type, submitted_text, context_description, category]);
 
-    // Get the inserted submission (SQLite compatible)
-    const result = await db.query(`
-      SELECT * FROM user_submissions WHERE submission_id = $1
-    `, [submission_id]);
+        // Get the inserted submission (SQLite compatible)
+        const result = await db.query(`
+          SELECT * FROM user_submissions WHERE submission_id = $1
+        `, [submission_id]);
 
-    const submission = result.rows[0];
+        const submission = result.rows[0];
 
-    res.status(201).json({
-      success: true,
-      submission: {
-        id: submission.submission_id,
-        type: submission.submission_type,
-        text: submission.submitted_text,
-        status: submission.submission_status,
-        created_at: submission.created_at
-      },
-      message: 'Thanks for contributing to Ellens\' personality! Your submission will be reviewed.'
-    });
+        res.status(201).json({
+          success: true,
+          submission: {
+            id: submission.submission_id,
+            type: submission.submission_type,
+            text: submission.submitted_text,
+            status: submission.submission_status,
+            created_at: submission.created_at
+          },
+          message: 'Thanks for contributing to Ellens\' personality! Your submission will be reviewed.'
+        });
+      } catch (error) {
+        console.error('Error creating submission:', error);
+        return res.status(500).json({ error: 'Failed to submit content' });
+      }
+    } else {
+      // Local development - save to local file storage
+      console.log('🏠 Local development: Saving to local file storage');
+      const localSubmission = localSubmissionStorage.createSubmission({
+        submission_id,
+        user_session_id: session_id,
+        submission_type,
+        submitted_text,
+        context_description,
+        category
+      });
 
+      res.status(201).json({
+        success: true,
+        submission: {
+          id: localSubmission.submission_id,
+          type: localSubmission.submission_type,
+          text: localSubmission.submitted_text,
+          status: localSubmission.submission_status,
+          created_at: localSubmission.created_at
+        },
+        message: 'Thanks for contributing to Ellens\' personality! Saved to local development storage.'
+      });
+    }
   } catch (error) {
-    console.error('Error creating submission:', error);
-    return res.status(500).json({ error: 'Failed to submit content' });
+    console.error('Error in submission route:', error);
+    return res.status(500).json({ error: 'Failed to process submission' });
   }
 });
 
@@ -127,6 +158,26 @@ router.get('/public', async (req, res): Promise<void> => {
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
     const offset = (page - 1) * limit;
     const status = req.query.status as string || 'approved';
+
+    if (process.env.NODE_ENV !== 'production') {
+      // Local development - return data from local storage
+      console.log('🏠 Local development: Returning submissions from local storage');
+      const { submissions, total } = localSubmissionStorage.getSubmissions({
+        status,
+        limit,
+        offset
+      });
+      
+      const hasMore = offset + limit < total;
+      const response: SubmissionListResponse = {
+        submissions,
+        total,
+        page,
+        limit,
+        hasMore
+      };
+      return res.json(response);
+    }
 
     const result = await db.query(`
       SELECT 
@@ -177,6 +228,21 @@ router.post('/:submissionId/vote', async (req, res): Promise<void> => {
 
     if (!['up', 'down', 'report'].includes(vote_type)) {
       return res.status(400).json({ error: 'Invalid vote type' });
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      // Local development - record vote in local storage
+      console.log('🏠 Local development: Recording vote in local storage');
+      const success = localSubmissionStorage.voteOnSubmission(submissionId, vote_type as 'up' | 'down');
+      
+      if (!success) {
+        return res.status(404).json({ error: 'Submission not found' });
+      }
+      
+      return res.json({ 
+        success: true, 
+        message: `Vote recorded: ${vote_type}` 
+      });
     }
 
     // Check if user already voted
@@ -246,6 +312,22 @@ router.get('/admin/pending', async (req, res): Promise<void> => {
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const offset = (page - 1) * limit;
 
+    if (process.env.NODE_ENV !== 'production') {
+      // Local development - return pending submissions from local storage
+      console.log('🏠 Local development: Returning pending submissions from local storage');
+      const { submissions, total } = localSubmissionStorage.getPendingSubmissions(limit, offset);
+      
+      const hasMore = offset + limit < total;
+      const response: SubmissionListResponse = {
+        submissions,
+        total,
+        page,
+        limit,
+        hasMore
+      };
+      return res.json(response);
+    }
+
     const result = await db.query(`
       SELECT * FROM user_submissions 
       WHERE submission_status IN ('pending', 'flagged')
@@ -289,6 +371,25 @@ router.post('/admin/:submissionId/review', async (req, res): Promise<void> => {
 
     if (!['approve', 'reject', 'flag', 'unflag', 'feature', 'unfeature'].includes(action)) {
       return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      // Local development - update submission in local storage
+      console.log('🏠 Local development: Updating submission in local storage');
+      const newStatus = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'flagged';
+      const success = localSubmissionStorage.updateSubmissionStatus(submissionId, newStatus, admin_notes);
+      
+      if (!success) {
+        return res.status(404).json({ error: 'Submission not found' });
+      }
+      
+      return res.json({
+        success: true,
+        action,
+        previous_status: 'pending',
+        new_status: newStatus,
+        message: `Submission ${action}d successfully`
+      });
     }
 
     // Get current submission
@@ -388,6 +489,25 @@ router.post('/admin/:submissionId/review', async (req, res): Promise<void> => {
 // Admin dashboard stats
 router.get('/admin/stats', async (req, res): Promise<void> => {
   try {
+    if (process.env.NODE_ENV !== 'production') {
+      // Local development - return stats from local storage
+      console.log('🏠 Local development: Returning admin stats from local storage');
+      const localStats = localSubmissionStorage.getStats();
+      const topContributors = localSubmissionStorage.getTopContributors(5);
+      
+      const stats: AdminDashboardStats = {
+        total_pending: localStats.total_pending,
+        total_flagged: localStats.total_flagged,
+        total_approved_today: localStats.total_approved,
+        total_rejected_today: localStats.total_rejected,
+        avg_review_time_hours: 0.5,
+        most_active_category: 'phrase',
+        community_engagement_score: 0.8,
+        top_contributors: topContributors
+      };
+      return res.json(stats);
+    }
+
     // Get basic counts
     const statsResult = await db.query(`
       SELECT 
@@ -456,6 +576,29 @@ router.get('/approved-content', async (req, res): Promise<void> => {
   try {
     const mood = req.query.mood as string;
     const chaos_level = parseInt(req.query.chaos_level as string) || 50;
+
+    if (process.env.NODE_ENV !== 'production') {
+      // Local development - return approved content from local storage
+      console.log('🏠 Local development: Returning approved content from local storage');
+      const content = localSubmissionStorage.getApprovedContent(mood, chaos_level);
+      
+      return res.json({
+        content: content.map(submission => ({
+          id: submission.id,
+          submission_id: submission.submission_id,
+          content_type: submission.submission_type,
+          response_text: submission.submitted_text,
+          trigger_keywords: [submission.category || submission.submission_type],
+          mood_requirement: submission.category,
+          weight: submission.quality_score || 1.0,
+          context_description: submission.context_description,
+          times_used: submission.times_used,
+          created_at: submission.created_at
+        })),
+        chaos_level,
+        mood: mood || 'any'
+      });
+    }
 
     let query = `
       SELECT ac.*, us.submitted_text, us.context_description

@@ -14,9 +14,25 @@ export class Database {
       this.pool = new Pool({
         connectionString: databaseUrl,
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-        max: 20,
+        max: 10, // Reduced from 20 for better resource management
+        min: 2,  // Maintain minimum connections
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
+        connectionTimeoutMillis: 5000, // Increased from 2000ms for better reliability
+        // acquireTimeoutMillis not supported in this version
+        allowExitOnIdle: true          // Allow pool to close when idle
+      });
+
+      // Set up connection pool event handlers
+      this.pool.on('error', (err) => {
+        console.error('❌ PostgreSQL pool error:', err);
+      });
+
+      this.pool.on('connect', () => {
+        console.log('🔗 New PostgreSQL client connected');
+      });
+
+      this.pool.on('remove', () => {
+        console.log('🔌 PostgreSQL client removed from pool');
       });
     }
 
@@ -126,6 +142,37 @@ export class Database {
     } catch (error) {
       return false;
     }
+  }
+
+  // Get connection pool stats (PostgreSQL only)
+  public getPoolStats(): object {
+    if (this.usingSQLite) {
+      return { type: 'sqlite', status: 'active' };
+    }
+    
+    return {
+      type: 'postgresql',
+      totalCount: this.pool!.totalCount,
+      idleCount: this.pool!.idleCount,
+      waitingCount: this.pool!.waitingCount
+    };
+  }
+
+  // Execute multiple queries in sequence with better error handling
+  public async batch(queries: Array<{ text: string; params?: any[] }>): Promise<QueryResult[]> {
+    const results: QueryResult[] = [];
+    
+    for (const query of queries) {
+      try {
+        const result = await this.query(query.text, query.params);
+        results.push(result);
+      } catch (error) {
+        console.error('❌ Batch query failed:', { query: query.text, error });
+        throw error;
+      }
+    }
+    
+    return results;
   }
 }
 

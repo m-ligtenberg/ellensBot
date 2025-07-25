@@ -2,10 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import dotenv from 'dotenv';
-dotenv.config();
 import rateLimit from 'express-rate-limit';
+import { loadEnvironment, getDeploymentMode, getAIConfig } from './config/deployment';
 import { env, environmentConfig } from './config/environment';
+
+// Load environment based on deployment mode
+const deploymentMode = getDeploymentMode();
+loadEnvironment(deploymentMode);
 
 // Import routes
 import chatRoutes from './routes/chat';
@@ -16,6 +19,8 @@ import scraperRoutes from './routes/scraper';
 import submissionsRoutes from './routes/submissions';
 import advancedMLRoutes from './routes/advancedML';
 import personalityRoutes from './routes/personality';
+// import voiceRoutes from './routes/voice';
+import ttsRoutes from './routes/tts';
 
 // Import services
 import { initializeWebSocketService } from './services/websocketService';
@@ -79,6 +84,8 @@ app.use('/api/scraper', scraperRoutes);
 app.use('/api/submissions', submissionsRoutes);
 app.use('/api/ml', advancedMLRoutes);
 app.use('/api/personality', personalityRoutes);
+// app.use('/api/voice', voiceRoutes);
+app.use('/api/tts', ttsRoutes);
 
 // Socket.io setup
 const io = new Server(server, {

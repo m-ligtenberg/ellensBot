@@ -15,6 +15,7 @@ export interface EllensPersonalityState {
   currentMood: 'chill' | 'chaotic' | 'done' | 'confused';
   messageCount: number;
   conversationHistory: string[];
+  lastDrugDetection?: { detected: boolean; type: string; confidence: number; terms: string[] };
 }
 
 export interface EllensResponse {
@@ -89,9 +90,10 @@ export class EllensPersonalityEngine {
     // Update state based on user message
     this.updatePersonalityState(state, userMessage);
 
-    // Check if Ellens should interrupt (with ML-enhanced logic)
-    if (await this.shouldInterruptEnhanced(state, userMessage, userId, conversationId)) {
-      return this.generateInterruption(state);
+    // Enhanced interruption detection using pattern recognition
+    const interruptionCheck = PersonalityPatterns.shouldTriggerInterruption(userMessage, state.messageCount, state.chaosLevel);
+    if (interruptionCheck.should || await this.shouldInterruptEnhanced(state, userMessage, userId, conversationId)) {
+      return this.generateInterruption(state, interruptionCheck.reason);
     }
 
     // Check if Ellens is getting bored/done (with enhanced patterns)
@@ -155,10 +157,16 @@ export class EllensPersonalityEngine {
     state.messageCount++;
 
     // Enhanced drug reference detection using PersonalityPatterns
-    if (PersonalityPatterns.containsDrugReference(userMessage)) {
+    const drugDetection = PersonalityPatterns.detectDrugReference(userMessage);
+    if (drugDetection.detected) {
       state.cocaineReferences++;
-      state.chaosLevel = Math.min(state.chaosLevel + 15, 100);
-      state.patience = Math.max(state.patience - 2, 1);
+      // Adjust chaos level based on confidence and type
+      const chaosIncrease = Math.floor(drugDetection.confidence * 20) + 5;
+      state.chaosLevel = Math.min(state.chaosLevel + chaosIncrease, 100);
+      state.patience = Math.max(state.patience - Math.floor(drugDetection.confidence * 3), 1);
+      
+      // Store detection info for enhanced responses
+      state.lastDrugDetection = drugDetection;
     }
 
     // Reduce patience over time
@@ -201,7 +209,7 @@ export class EllensPersonalityEngine {
     return state.patience <= 0 && Math.random() < 0.7;
   }
 
-  private generateInterruption(state: EllensPersonalityState): EllensResponse {
+  private generateInterruption(state: EllensPersonalityState, reason?: string): EllensResponse {
     const interruptionText = PersonalityPatterns.getInterruption(state.chaosLevel);
     
     state.chaosLevel = Math.min(state.chaosLevel + 10, 100);

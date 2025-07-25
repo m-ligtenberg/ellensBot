@@ -1,111 +1,69 @@
 {
-  "name": "ellens-chatbot",
-  "version": "1.0.0",
-  "description": "Young Ellens AI Chatbot - Desktop Application",
-  "main": "index.js",
-  "scripts": {
-    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
-    "build": "npm run frontend:build",
-    "start": "npm run backend:start",
-    "backend:dev": "cd backend && npm run dev",
-    "backend:build": "cd backend && npm run build",
-    "backend:start": "cd backend && npm start",
-    "frontend:dev": "cd frontend && npm start",
-    "frontend:build": "cd frontend && npm run build",
-    "install:all": "npm install && npm run backend:install && npm run frontend:install",
-    "backend:install": "cd backend && npm install",
-    "frontend:install": "cd frontend && npm install",
-    "db:init": "cd backend && npm run db:init",
-    "db:reset": "cd backend && npm run db:reset",
-    "lint": "cd backend && npm run lint",
-    "test": "cd backend && npm test",
-    "deploy:check": "node scripts/validate-deployment.js",
-    "electron": "npm run build && electron .",
-    "electron:dev": "NODE_ENV=development electron .",
-    "electron:pack": "npm run build && electron-builder --dir",
-    "electron:dist": "npm run build && electron-builder",
-    "postinstall": "electron-builder install-app-deps"
-  },
-  "main": "electron-main.js",
+  "name": "young-ellens-desktop",
+  "version": "2.0.0",
+  "description": "Young Ellens AI Chatbot - Clean Desktop Application",
+  "main": "src/main/main.js",
   "homepage": "./",
-  "dependencies": {
-    "dotenv": "^17.2.0",
-    "electron": "^32.0.0"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "electron-builder": "^25.0.0",
-    "electron-reload": "^2.0.0"
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run watch\" \"wait-on http://localhost:8080 && electron .\"",
+    "watch": "webpack serve --config webpack.config.js",
+    "build": "webpack --config webpack.config.js --mode production",
+    "dist": "npm run build && electron-builder",
+    "pack": "npm run build && electron-builder --dir",
+    "clean": "rm -rf dist build"
   },
   "keywords": [
+    "electron",
+    "desktop",
     "chatbot",
     "ai",
     "young-ellens",
-    "dutch-rap",
-    "personality-engine",
-    "claude",
-    "openai"
+    "dutch-rap"
   ],
-  "author": "Young Ellens Bot Team",
+  "author": "Young Ellens Desktop Team",
   "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
+  "dependencies": {
+    "sqlite3": "^5.1.7",
+    "axios": "^1.6.8",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
+    "html-webpack-plugin": "^5.6.0",
+    "css-loader": "^6.8.1",
+    "style-loader": "^3.3.3",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.ellensbot.desktop",
-    "productName": "Young Ellens Chatbot",
+    "appId": "com.youngellens.desktop",
+    "productName": "Young Ellens",
     "directories": {
-      "output": "dist-electron"
+      "output": "release"
     },
     "files": [
-      "electron-main.js",
-      "electron-preload.js",
-      "electron-settings.html",
-      "backend/dist/**/*",
-      "frontend/build/**/*",
-      "assets/**/*",
-      "COQUI_INSTALLATION.md",
-      "README.md",
+      "src/main/**/*",
+      "build/**/*",
+      "node_modules/**/*",
       "package.json"
     ],
     "mac": {
       "category": "public.app-category.entertainment",
-      "icon": "assets/icon.icns",
-      "target": [
-        {
-          "target": "dmg",
-          "arch": ["x64", "arm64"]
-        }
-      ]
+      "target": "dmg"
     },
     "win": {
-      "icon": "assets/icon.ico",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
-      ]
+      "target": "nsis"
     },
     "linux": {
-      "icon": "assets/icon.png",
-      "category": "Chat",
       "target": [
-        {
-          "target": "AppImage",
-          "arch": ["x64"]
-        },
-        {
-          "target": "deb",
-          "arch": ["x64"]
-        }
+        "AppImage",
+        "deb"
       ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
     }
   }
 }

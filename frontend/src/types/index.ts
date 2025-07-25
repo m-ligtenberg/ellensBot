@@ -61,6 +61,12 @@ export interface ScraperStats {
     sources: any[];
   };
   timestamp: string;
+  // Serverless compatibility properties
+  lastRun?: string;
+  totalFound?: number;
+  activeSources?: number;
+  successRate?: string;
+  lastError?: string;
 }
 
 export interface ContentDiscovery {
@@ -75,4 +81,9 @@ export interface ContentDiscovery {
   }>;
   totalQualityContent: number;
   timestamp: string;
+  // Serverless compatibility properties
+  type?: string;
+  title?: string;
+  source?: string;
+  confidence?: number;
 }

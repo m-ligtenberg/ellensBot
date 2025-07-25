@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Young Ellens Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+
+        .header h1 {
+            color: #00ff41;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #cccccc;
+            font-size: 14px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #ffff00;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #cccccc;
+            font-size: 13px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #ffffff;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00ff41;
+            box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.1);
+        }
+
+        .form-group input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .range-value {
+            color: #00ff41;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            accent-color: #00ff41;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff41 0%, #00cc33 100%);
+            color: #000000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 255, 65, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid #555;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .api-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .api-status.valid { background: #00ff41; }
+        .api-status.invalid { background: #ff4444; }
+        .api-status.unknown { background: #ffff00; }
+
+        .help-text {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+            line-height: 1.3;
+        }
+
+        .warning {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid rgba(255, 255, 0, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+            color: #ffff00;
+            margin-bottom: 15px;
+        }
+
+        .app-info {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Young Ellens Settings</h1>
+            <p>Configure your local desktop chatbot</p>
+        </div>
+
+        <div class="section">
+            <h2>🔑 API Keys</h2>
+            <div class="warning">
+                Your API keys are stored locally on your computer and never shared.
+            </div>
+            
+            <div class="form-group">
+                <label for="openai-key">
+                    OpenAI API Key
+                    <span class="api-status unknown" id="openai-status"></span>
+                </label>
+                <input type="password" id="openai-key" placeholder="sk-..." />
+                <div class="help-text">Get your key from platform.openai.com</div>
+            </div>
+
+            <div class="form-group">
+                <label for="claude-key">
+                    Claude API Key (Anthropic)
+                    <span class="api-status unknown" id="claude-status"></span>
+                </label>
+                <input type="password" id="claude-key" placeholder="sk-ant-..." />
+                <div class="help-text">Get your key from console.anthropic.com</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎭 Personality Settings</h2>
+            
+            <div class="form-group">
+                <label for="chaos-level">
+                    Chaos Level: <span class="range-value" id="chaos-value">50</span>%
+                </label>
+                <input type="range" id="chaos-level" min="0" max="100" value="50" />
+                <div class="help-text">How chaotic and unpredictable Ellens should be</div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="denial-mode" checked />
+                <label for="denial-mode">Drug Denial Mode</label>
+            </div>
+            <div class="help-text">Always deny drug use with signature phrases</div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="auto-save" checked />
+                <label for="auto-save">Auto-save Conversations</label>
+            </div>
+            <div class="help-text">Automatically save chat history locally</div>
+        </div>
+
+        <div class="section">
+            <h2>🎤 Text-to-Speech</h2>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="tts-enabled" />
+                <label for="tts-enabled">Enable Text-to-Speech</label>
+            </div>
+            <div class="help-text">Requires Coqui TTS installation (see Help → Installation Guide)</div>
+
+            <div class="form-group">
+                <label for="tts-voice">Voice Model</label>
+                <select id="tts-voice">
+                    <option value="ellens-dutch-male">Young Ellens Voice</option>
+                    <option value="dutch-casual-male">Dutch Casual Male</option>
+                    <option value="dutch-standard">Dutch Standard</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="tts-speed">
+                    Speech Speed: <span class="range-value" id="speed-value">1.0</span>x
+                </label>
+                <input type="range" id="tts-speed" min="0.5" max="2.0" step="0.1" value="1.0" />
+            </div>
+
+            <div class="form-group">
+                <label for="tts-volume">
+                    Volume: <span class="range-value" id="volume-value">80</span>%
+                </label>
+                <input type="range" id="tts-volume" min="10" max="100" step="5" value="80" />
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎨 Appearance</h2>
+            
+            <div class="form-group">
+                <label for="theme">Theme</label>
+                <select id="theme">
+                    <option value="dark">Dark (Street Style)</option>
+                    <option value="neon">Neon (Club Style)</option>
+                    <option value="classic">Classic</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="font-size">Font Size</label>
+                <select id="font-size">
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-secondary" onclick="cancelSettings()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+        </div>
+
+        <div class="app-info">
+            <div id="app-info">Loading app info...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentSettings = {};
+
+        // Load settings when the window opens
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                currentSettings = await window.settingsAPI.getSettings();
+                loadSettingsToUI(currentSettings);
+                
+                const appInfo = await window.electronAPI.getAppInfo();
+                document.getElementById('app-info').textContent = 
+                    `Young Ellens Desktop v${appInfo.version} • ${appInfo.platform} • Data: ${appInfo.dataPath}`;
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        });
+
+        function loadSettingsToUI(settings) {
+            // API Keys
+            document.getElementById('openai-key').value = settings.apiKeys.openai || '';
+            document.getElementById('claude-key').value = settings.apiKeys.claude || '';
+
+            // Personality
+            document.getElementById('chaos-level').value = settings.behavior.chaosLevel || 50;
+            document.getElementById('chaos-value').textContent = settings.behavior.chaosLevel || 50;
+            document.getElementById('denial-mode').checked = settings.behavior.denialMode !== false;
+            document.getElementById('auto-save').checked = settings.behavior.autoSave !== false;
+
+            // TTS
+            document.getElementById('tts-enabled').checked = settings.tts.enabled || false;
+            document.getElementById('tts-voice').value = settings.tts.voice || 'ellens-dutch-male';
+            document.getElementById('tts-speed').value = settings.tts.speed || 1.0;
+            document.getElementById('speed-value').textContent = settings.tts.speed || 1.0;
+            document.getElementById('tts-volume').value = (settings.tts.volume || 0.8) * 100;
+            document.getElementById('volume-value').textContent = Math.round((settings.tts.volume || 0.8) * 100);
+
+            // Appearance
+            document.getElementById('theme').value = settings.appearance.theme || 'dark';
+            document.getElementById('font-size').value = settings.appearance.fontSize || 'medium';
+
+            updateAPIStatus();
+        }
+
+        // Real-time updates for range sliders
+        document.getElementById('chaos-level').addEventListener('input', (e) => {
+            document.getElementById('chaos-value').textContent = e.target.value;
+        });
+
+        document.getElementById('tts-speed').addEventListener('input', (e) => {
+            document.getElementById('speed-value').textContent = e.target.value;
+        });
+
+        document.getElementById('tts-volume').addEventListener('input', (e) => {
+            document.getElementById('volume-value').textContent = e.target.value;
+        });
+
+        // Update API key status indicators
+        document.getElementById('openai-key').addEventListener('input', updateAPIStatus);
+        document.getElementById('claude-key').addEventListener('input', updateAPIStatus);
+
+        function updateAPIStatus() {
+            const openaiKey = document.getElementById('openai-key').value;
+            const claudeKey = document.getElementById('claude-key').value;
+
+            const openaiStatus = document.getElementById('openai-status');
+            const claudeStatus = document.getElementById('claude-status');
+
+            // Basic validation
+            openaiStatus.className = 'api-status ' + (
+                openaiKey.startsWith('sk-') && openaiKey.length > 20 ? 'valid' : 
+                openaiKey.length > 0 ? 'invalid' : 'unknown'
+            );
+
+            claudeStatus.className = 'api-status ' + (
+                claudeKey.startsWith('sk-ant-') && claudeKey.length > 30 ? 'valid' : 
+                claudeKey.length > 0 ? 'invalid' : 'unknown'
+            );
+        }
+
+        async function saveSettings() {
+            try {
+                const newSettings = {
+                    ...currentSettings,
+                    apiKeys: {
+                        openai: document.getElementById('openai-key').value,
+                        claude: document.getElementById('claude-key').value
+                    },
+                    behavior: {
+                        chaosLevel: parseInt(document.getElementById('chaos-level').value),
+                        denialMode: document.getElementById('denial-mode').checked,
+                        autoSave: document.getElementById('auto-save').checked
+                    },
+                    tts: {
+                        enabled: document.getElementById('tts-enabled').checked,
+                        voice: document.getElementById('tts-voice').value,
+                        speed: parseFloat(document.getElementById('tts-speed').value),
+                        pitch: currentSettings.tts.pitch || 1.0,
+                        volume: parseInt(document.getElementById('tts-volume').value) / 100
+                    },
+                    appearance: {
+                        theme: document.getElementById('theme').value,
+                        fontSize: document.getElementById('font-size').value
+                    }
+                };
+
+                await window.settingsAPI.saveSettings(newSettings);
+                window.settingsAPI.closeWindow();
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings. Please try again.');
+            }
+        }
+
+        function cancelSettings() {
+            window.settingsAPI.closeWindow();
+        }
+
+        // Handle Enter key to save
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                saveSettings();
+            } else if (e.key === 'Escape') {
+                cancelSettings();
+            }
+        });
+    </script>
+</body>
+</html>

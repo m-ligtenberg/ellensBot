@@ -27,41 +27,63 @@ interface ClientToServerEvents {
 export class WebSocketService {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
   private conversationId: string = '';
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
+  private isManualDisconnect: boolean = false;
+  private connectionState: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' = 'disconnected';
+  private onConnectionStateChangeCallback?: (state: string) => void;
 
   connect(): Promise<Socket<ServerToClientEvents, ClientToServerEvents>> {
     return new Promise((resolve, reject) => {
-      if (this.socket?.connected) {
+      if (this.socket?.connected && this.connectionState === 'connected') {
         resolve(this.socket);
         return;
       }
+
+      this.isManualDisconnect = false;
+      this.connectionState = 'connecting';
+      this.notifyConnectionStateChange();
 
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
       
       this.socket = io(backendUrl, {
         transports: ['websocket', 'polling'],
         timeout: 10000,
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
+        reconnection: false, // We'll handle reconnection manually
+        forceNew: true
       });
 
       this.socket.on('connect', () => {
         console.log('🔌 Connected to backend WebSocket');
+        this.connectionState = 'connected';
+        this.reconnectAttempts = 0;
+        this.notifyConnectionStateChange();
         resolve(this.socket!);
       });
 
       this.socket.on('connect_error', (error) => {
         console.error('❌ WebSocket connection error:', error);
+        this.connectionState = 'disconnected';
+        this.notifyConnectionStateChange();
         reject(error);
       });
 
       this.socket.on('disconnect', (reason) => {
         console.log('🔌 Disconnected from WebSocket:', reason);
+        this.connectionState = 'disconnected';
+        this.notifyConnectionStateChange();
+        
+        // Auto-reconnect unless it was a manual disconnect
+        if (!this.isManualDisconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.scheduleReconnect();
+        }
       });
 
       // Set connection timeout
       setTimeout(() => {
         if (!this.socket?.connected) {
+          this.connectionState = 'disconnected';
+          this.notifyConnectionStateChange();
           reject(new Error('Connection timeout'));
         }
       }, 10000);
@@ -69,10 +91,16 @@ export class WebSocketService {
   }
 
   disconnect(): void {
+    this.isManualDisconnect = true;
+    this.reconnectAttempts = this.maxReconnectAttempts; // Prevent auto-reconnect
+    
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
     }
+    
+    this.connectionState = 'disconnected';
+    this.notifyConnectionStateChange();
   }
 
   sendMessage(message: string): void {
@@ -80,10 +108,15 @@ export class WebSocketService {
       throw new Error('WebSocket not connected');
     }
 
-    this.socket.emit('send_message', {
-      message,
-      conversationId: this.conversationId
-    });
+    try {
+      this.socket.emit('send_message', {
+        message,
+        conversationId: this.conversationId
+      });
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      throw new Error('Failed to send message');
+    }
   }
 
   setUserTyping(isTyping: boolean): void {
@@ -159,6 +192,56 @@ export class WebSocketService {
 
   getConversationId(): string {
     return this.conversationId;
+  }
+
+  getConnectionState(): string {
+    return this.connectionState;
+  }
+
+  onConnectionStateChange(callback: (state: string) => void): void {
+    this.onConnectionStateChangeCallback = callback;
+  }
+
+  private notifyConnectionStateChange(): void {
+    if (this.onConnectionStateChangeCallback) {
+      this.onConnectionStateChangeCallback(this.connectionState);
+    }
+  }
+
+  private scheduleReconnect(): void {
+    if (this.isManualDisconnect || this.reconnectAttempts >= this.maxReconnectAttempts) {
+      return;
+    }
+
+    this.reconnectAttempts++;
+    this.connectionState = 'reconnecting';
+    this.notifyConnectionStateChange();
+
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 10000); // Exponential backoff, max 10s
+    
+    console.log(`🔄 Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms`);
+    
+    setTimeout(async () => {
+      try {
+        await this.connect();
+        console.log('✅ Reconnected successfully');
+      } catch (error) {
+        console.error('❌ Reconnection failed:', error);
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.scheduleReconnect();
+        } else {
+          console.error('❌ Max reconnection attempts reached');
+          this.connectionState = 'disconnected';
+          this.notifyConnectionStateChange();
+        }
+      }
+    }, delay);
+  }
+
+  retry(): Promise<Socket<ServerToClientEvents, ClientToServerEvents>> {
+    this.reconnectAttempts = 0;
+    this.isManualDisconnect = false;
+    return this.connect();
   }
 }
 

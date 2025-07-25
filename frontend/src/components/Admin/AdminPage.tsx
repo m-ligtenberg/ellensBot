@@ -3,6 +3,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import ScraperPanel from './ScraperPanel';
 import SubmissionsPanel from './SubmissionsPanel';
 import AdvancedMLPanel from './AdvancedMLPanel';
+import MLDiscoveryPanel from './MLDiscoveryPanel';
+import ServerlessAdminDashboard from './ServerlessAdminDashboard';
+import CoquiTTSPanel from './CoquiTTSPanel';
 
 interface ContentItem {
   id: string;
@@ -21,7 +24,7 @@ interface AdminPageProps {
 
 const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) => {
   const { isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'content' | 'scraper' | 'submissions' | 'analytics' | 'ml' | 'discovery'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'content' | 'scraper' | 'submissions' | 'analytics' | 'ml' | 'discovery' | 'tts'>('dashboard');
   const [uploadedContent, setUploadedContent] = useState<ContentItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -139,7 +142,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
       <div className="bg-apple-gray-50 border-b border-apple-gray-300">
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex space-x-0 overflow-x-auto">
-            {(['dashboard', 'upload', 'content', 'scraper', 'submissions', 'analytics', 'ml', 'discovery'] as const).map((tab) => (
+            {(['dashboard', 'upload', 'content', 'scraper', 'submissions', 'analytics', 'ml', 'discovery', 'tts'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -152,10 +155,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
                 <span>
                   {tab === 'dashboard' && '🏠'} {tab === 'upload' && '📤'} {tab === 'content' && '📚'} 
                   {tab === 'scraper' && '🕷️'} {tab === 'submissions' && '🚀'} 
-                  {tab === 'analytics' && '📊'} {tab === 'ml' && '🧠'} {tab === 'discovery' && '🤖'}
+                  {tab === 'analytics' && '📊'} {tab === 'ml' && '🧠'} {tab === 'discovery' && '🤖'} {tab === 'tts' && '🎤'}
                 </span>
                 <span>
-                  {tab === 'ml' ? 'ML Controls' : tab === 'discovery' ? 'ML Discovery' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {tab === 'ml' ? 'ML Controls' : tab === 'discovery' ? 'ML Discovery' : tab === 'tts' ? 'Text-to-Speech' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </span>
               </button>
             ))}
@@ -167,189 +170,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
       <div className="max-w-7xl mx-auto p-6">
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-8">
-            {/* System Status Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-3xl">🤖</div>
-                  <div className="text-right">
-                    <div className="text-2xl font-semibold text-apple-gray-900">Active</div>
-                    <div className="text-sm text-apple-gray-600">AI Status</div>
-                  </div>
-                </div>
-                <div className="text-xs text-apple-green font-medium">✅ Fallback Mode</div>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-3xl">👥</div>
-                  <div className="text-right">
-                    <div className="text-2xl font-semibold text-apple-gray-900">0</div>
-                    <div className="text-sm text-apple-gray-600">Active Users</div>
-                  </div>
-                </div>
-                <div className="text-xs text-apple-blue font-medium">Real-time</div>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-3xl">💬</div>
-                  <div className="text-right">
-                    <div className="text-2xl font-semibold text-apple-gray-900">{uploadedContent.length}</div>
-                    <div className="text-sm text-apple-gray-600">Content Items</div>
-                  </div>
-                </div>
-                <div className="text-xs text-apple-orange font-medium">Total uploaded</div>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-3xl">🧠</div>
-                  <div className="text-right">
-                    <div className="text-2xl font-semibold text-apple-gray-900">6</div>
-                    <div className="text-sm text-apple-gray-600">ML Updates</div>
-                  </div>
-                </div>
-                <div className="text-xs text-apple-purple font-medium">Last hour</div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-8">
-              <h2 className="text-2xl font-semibold text-apple-gray-900 mb-6">Quick Actions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className="flex items-center space-x-3 p-4 bg-apple-gray-50 hover:bg-apple-gray-100 rounded-xl transition-colors duration-200 text-left"
-                >
-                  <div className="text-2xl">📤</div>
-                  <div>
-                    <div className="font-medium text-apple-gray-900">Upload Content</div>
-                    <div className="text-sm text-apple-gray-600">Add new training data</div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('ml')}
-                  className="flex items-center space-x-3 p-4 bg-apple-gray-50 hover:bg-apple-gray-100 rounded-xl transition-colors duration-200 text-left"
-                >
-                  <div className="text-2xl">🧠</div>
-                  <div>
-                    <div className="font-medium text-apple-gray-900">ML Controls</div>
-                    <div className="text-sm text-apple-gray-600">Manage AI behavior</div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('analytics')}
-                  className="flex items-center space-x-3 p-4 bg-apple-gray-50 hover:bg-apple-gray-100 rounded-xl transition-colors duration-200 text-left"
-                >
-                  <div className="text-2xl">📊</div>
-                  <div>
-                    <div className="font-medium text-apple-gray-900">View Analytics</div>
-                    <div className="text-sm text-apple-gray-600">System performance</div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* Recent Activity & System Info */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Recent Activity */}
-              <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-8">
-                <h3 className="text-xl font-semibold text-apple-gray-900 mb-6">Recent Activity</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3 p-3 bg-apple-gray-50 rounded-xl">
-                    <div className="text-lg">🔄</div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-apple-gray-900">ML Engine Started</div>
-                      <div className="text-xs text-apple-gray-600">Continuous learning enabled</div>
-                      <div className="text-xs text-apple-gray-500 mt-1">2 minutes ago</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-3 p-3 bg-apple-gray-50 rounded-xl">
-                    <div className="text-lg">🏁</div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-apple-gray-900">Backend Server Started</div>
-                      <div className="text-xs text-apple-gray-600">Running on port 3001</div>
-                      <div className="text-xs text-apple-gray-500 mt-1">5 minutes ago</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-3 p-3 bg-apple-gray-50 rounded-xl">
-                    <div className="text-lg">⚠️</div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-apple-gray-900">AI Services Status</div>
-                      <div className="text-xs text-apple-gray-600">Running in fallback mode</div>
-                      <div className="text-xs text-apple-gray-500 mt-1">System startup</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* System Information */}
-              <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-8">
-                <h3 className="text-xl font-semibold text-apple-gray-900 mb-6">System Information</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-apple-gray-100">
-                    <span className="text-sm text-apple-gray-600">Backend Status</span>
-                    <span className="text-sm font-medium text-apple-green">✅ Running</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center py-2 border-b border-apple-gray-100">
-                    <span className="text-sm text-apple-gray-600">Database</span>
-                    <span className="text-sm font-medium text-apple-green">✅ SQLite Connected</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center py-2 border-b border-apple-gray-100">
-                    <span className="text-sm text-apple-gray-600">WebSocket</span>
-                    <span className="text-sm font-medium text-apple-green">✅ Active</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center py-2 border-b border-apple-gray-100">
-                    <span className="text-sm text-apple-gray-600">ML Engine</span>
-                    <span className="text-sm font-medium text-apple-green">✅ Learning</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center py-2 border-b border-apple-gray-100">
-                    <span className="text-sm text-apple-gray-600">API Keys</span>
-                    <span className="text-sm font-medium text-apple-orange">⚠️ Not Configured</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-apple-gray-600">Version</span>
-                    <span className="text-sm font-medium text-apple-gray-900">2.0.0</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Performance Metrics */}
-            <div className="bg-white rounded-2xl shadow-card border border-apple-gray-300 p-8">
-              <h3 className="text-xl font-semibold text-apple-gray-900 mb-6">Performance Overview</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-apple-blue mb-2">98.5%</div>
-                  <div className="text-sm text-apple-gray-600">Uptime</div>
-                  <div className="text-xs text-apple-gray-500 mt-1">Last 30 days</div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-apple-green mb-2">1.2s</div>
-                  <div className="text-sm text-apple-gray-600">Avg Response Time</div>
-                  <div className="text-xs text-apple-gray-500 mt-1">Last 24 hours</div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-apple-purple mb-2">47</div>
-                  <div className="text-sm text-apple-gray-600">ML Models Active</div>
-                  <div className="text-xs text-apple-gray-500 mt-1">Currently running</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ServerlessAdminDashboard />
         )}
 
         {/* Upload Tab */}
@@ -390,7 +211,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
 
                 {/* Manual Entry */}
                 <form onSubmit={handleManualSubmit} className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">Manual Entry</h3>
+                  <h3 className="text-lg font-semibold text-apple-gray-900">Manual Entry</h3>
                   
                   <select
                     value={formData.type}
@@ -398,7 +219,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
                       ...prev,
                       type: e.target.value as ContentItem['type']
                     }))}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded border border-gray-600 focus:border-accent-green focus:outline-none"
+                    className="w-full bg-white text-apple-gray-900 px-4 py-3 rounded-xl border border-apple-gray-300 focus:border-apple-blue focus:outline-none"
                   >
                     <option value="lyrics">🎵 Lyrics</option>
                     <option value="interview">🎙️ Interview</option>
@@ -412,7 +233,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
                     placeholder="Title (e.g., 'Song: Alleen Me Wietje')"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded border border-gray-600 focus:border-accent-green focus:outline-none"
+                    className="w-full bg-white text-apple-gray-900 px-4 py-3 rounded-xl border border-apple-gray-300 focus:border-apple-blue focus:outline-none"
                   />
 
                   <textarea
@@ -420,7 +241,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
                     value={formData.content}
                     onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                     rows={8}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded border border-gray-600 focus:border-accent-green focus:outline-none resize-none"
+                    className="w-full bg-white text-apple-gray-900 px-4 py-3 rounded-xl border border-apple-gray-300 focus:border-apple-blue focus:outline-none resize-none"
                   />
 
                   <input
@@ -428,12 +249,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
                     placeholder="Source (optional)"
                     value={formData.source}
                     onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value }))}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded border border-gray-600 focus:border-accent-green focus:outline-none"
+                    className="w-full bg-white text-apple-gray-900 px-4 py-3 rounded-xl border border-apple-gray-300 focus:border-apple-blue focus:outline-none"
                   />
 
                   <button
                     type="submit"
-                    className="w-full bg-accent-yellow text-black py-3 rounded font-bold hover:bg-yellow-300 transition-colors"
+                    className="w-full bg-apple-blue text-white py-3 rounded-xl font-medium hover:bg-opacity-90 transition-all duration-200"
                   >
                     Upload Content
                   </button>
@@ -567,6 +388,16 @@ const AdminPage: React.FC<AdminPageProps> = ({ onContentUpload, onBackToChat }) 
         {/* ML Controls Tab */}
         {activeTab === 'ml' && (
           <AdvancedMLPanel />
+        )}
+
+        {/* ML Discovery Tab */}
+        {activeTab === 'discovery' && (
+          <MLDiscoveryPanel />
+        )}
+
+        {/* Text-to-Speech Tab */}
+        {activeTab === 'tts' && (
+          <CoquiTTSPanel />
         )}
       </div>
     </div>

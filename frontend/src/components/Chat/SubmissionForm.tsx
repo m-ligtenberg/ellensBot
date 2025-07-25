@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiRequest } from '../../utils/api';
 
 interface SubmissionFormProps {
   isOpen: boolean;
@@ -54,7 +55,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ isOpen, onClose, onSubm
     }
 
     try {
-      const response = await fetch('/api/submissions/submit', {
+      const response = await apiRequest('/api/submissions/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

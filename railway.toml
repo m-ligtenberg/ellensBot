@@ -1,0 +1,17 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd backend && npm install && npm run build:production"
+
+[deploy]
+startCommand = "cd backend && npm start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "always"
+
+[environments.production]
+DEPLOYMENT_MODE = "production"
+NODE_ENV = "production"
+
+[environments.staging]
+DEPLOYMENT_MODE = "production"
+NODE_ENV = "staging"

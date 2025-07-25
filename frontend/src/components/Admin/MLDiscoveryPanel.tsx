@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface DiscoveredSource {
   url: string;
@@ -49,6 +49,42 @@ const MLDiscoveryPanel: React.FC = () => {
   const [intervalMinutes, setIntervalMinutes] = useState(60);
   const [selectedRelevanceFilter, setSelectedRelevanceFilter] = useState(0);
 
+  const loadStats = useCallback(async () => {
+    try {
+      const response = await fetch('/api/scraper/ml/discovery/stats');
+      const data = await response.json();
+      if (data.success) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to load ML discovery stats:', error);
+    }
+  }, []);
+
+  const loadSources = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/scraper/ml/discovery/sources?limit=50&minRelevance=${selectedRelevanceFilter}`);
+      const data = await response.json();
+      if (data.success) {
+        setSources(data.data.sources);
+      }
+    } catch (error) {
+      console.error('Failed to load discovered sources:', error);
+    }
+  }, [selectedRelevanceFilter]);
+
+  const loadInsights = useCallback(async () => {
+    try {
+      const response = await fetch('/api/scraper/ml/discovery/insights');
+      const data = await response.json();
+      if (data.success) {
+        setInsights(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to load ML insights:', error);
+    }
+  }, []);
+
   useEffect(() => {
     loadStats();
     loadSources();
@@ -61,43 +97,7 @@ const MLDiscoveryPanel: React.FC = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const loadStats = async () => {
-    try {
-      const response = await fetch('/api/scraper/ml/discovery/stats');
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.data);
-      }
-    } catch (error) {
-      console.error('Failed to load ML discovery stats:', error);
-    }
-  };
-
-  const loadSources = async () => {
-    try {
-      const response = await fetch(`/api/scraper/ml/discovery/sources?limit=50&minRelevance=${selectedRelevanceFilter}`);
-      const data = await response.json();
-      if (data.success) {
-        setSources(data.data.sources);
-      }
-    } catch (error) {
-      console.error('Failed to load discovered sources:', error);
-    }
-  };
-
-  const loadInsights = async () => {
-    try {
-      const response = await fetch('/api/scraper/ml/discovery/insights');
-      const data = await response.json();
-      if (data.success) {
-        setInsights(data.data);
-      }
-    } catch (error) {
-      console.error('Failed to load ML insights:', error);
-    }
-  };
+  }, [loadStats, loadSources, loadInsights]);
 
   const startDiscovery = async () => {
     setIsLoading(true);

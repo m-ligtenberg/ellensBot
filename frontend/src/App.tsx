@@ -20,6 +20,7 @@ const AppContent: React.FC = () => {
     ellensTypingMood, 
     isConnected, 
     connectionError, 
+    connectionState,
     sendMessage, 
     setUserTyping, 
     retryConnection,
@@ -106,6 +107,7 @@ const AppContent: React.FC = () => {
                 ellensTypingMood={ellensTypingMood}
                 isConnected={isConnected}
                 connectionError={connectionError}
+                connectionState={connectionState}
                 onRetryConnection={retryConnection}
               />
             </div>

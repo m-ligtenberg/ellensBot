@@ -41,10 +41,10 @@
           cd frontend
           npm run build
         env:
-          REACT_APP_BACKEND_URL: https://ellensbot-ellensbot.up.railway.app
-          REACT_APP_WS_URL: wss://ellensbot-ellensbot.up.railway.app
+          REACT_APP_API_URL: https://ellens-bot.vercel.app
+          PUBLIC_URL: /ellensBot
           REACT_APP_ENVIRONMENT: production
-          REACT_APP_VERSION: 2.0.0
+          REACT_APP_VERSION: 2.0.0-serverless
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

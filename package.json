@@ -1,11 +1,11 @@
 {
   "name": "ellens-chatbot",
   "version": "1.0.0",
-  "description": "Young Ellens AI Chatbot with Personality Engine",
+  "description": "Young Ellens AI Chatbot - Desktop Application",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
-    "build": "npm run backend:build",
+    "build": "npm run frontend:build",
     "start": "npm run backend:start",
     "backend:dev": "cd backend && npm run dev",
     "backend:build": "cd backend && npm run build",
@@ -19,13 +19,23 @@
     "db:reset": "cd backend && npm run db:reset",
     "lint": "cd backend && npm run lint",
     "test": "cd backend && npm test",
-    "deploy:check": "node scripts/validate-deployment.js"
+    "deploy:check": "node scripts/validate-deployment.js",
+    "electron": "npm run build && electron .",
+    "electron:dev": "NODE_ENV=development electron .",
+    "electron:pack": "npm run build && electron-builder --dir",
+    "electron:dist": "npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
+  "main": "electron-main.js",
+  "homepage": "./",
   "dependencies": {
-    "dotenv": "^17.2.0"
+    "dotenv": "^17.2.0",
+    "electron": "^32.0.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "electron-builder": "^25.0.0",
+    "electron-reload": "^2.0.0"
   },
   "keywords": [
     "chatbot",
@@ -40,5 +50,62 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "build": {
+    "appId": "com.ellensbot.desktop",
+    "productName": "Young Ellens Chatbot",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron-main.js",
+      "electron-preload.js",
+      "electron-settings.html",
+      "backend/dist/**/*",
+      "frontend/build/**/*",
+      "assets/**/*",
+      "COQUI_INSTALLATION.md",
+      "README.md",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "icon": "assets/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Chat",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }

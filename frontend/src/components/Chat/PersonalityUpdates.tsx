@@ -2,7 +2,7 @@ import React from 'react';
 import { usePersonalityUpdates } from '../../hooks/usePersonalityUpdates';
 
 const PersonalityUpdates: React.FC = () => {
-  const { updates, isLoading, error, getUpdateIcon, getUpdateColor, formatTimeAgo } = usePersonalityUpdates(6);
+  const { updates, isLoading, error, getUpdateIcon, formatTimeAgo } = usePersonalityUpdates(6);
 
   if (error) {
     return (

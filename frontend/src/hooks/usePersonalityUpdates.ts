@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface PersonalityUpdate {
   id: string;
@@ -20,7 +20,7 @@ export const usePersonalityUpdates = (limit: number = 6) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUpdates = async () => {
+  const fetchUpdates = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -40,7 +40,7 @@ export const usePersonalityUpdates = (limit: number = 6) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [limit]);
 
   useEffect(() => {
     fetchUpdates();
@@ -49,7 +49,7 @@ export const usePersonalityUpdates = (limit: number = 6) => {
     const interval = setInterval(fetchUpdates, 60000);
     
     return () => clearInterval(interval);
-  }, [limit]);
+  }, [fetchUpdates]);
 
   const getUpdateIcon = (type: PersonalityUpdate['type']) => {
     switch (type) {

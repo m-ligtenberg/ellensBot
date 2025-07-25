@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Message } from '../types';
 import { websocketService } from '../services/websocket';
+import { logger } from '../utils/logger';
 
 export const useWebSocketChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -8,14 +9,16 @@ export const useWebSocketChat = () => {
   const [ellensTypingMood, setEllensTypingMood] = useState<string>('chill');
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [connectionState, setConnectionState] = useState<string>('disconnected');
 
   const addMessage = useCallback((message: Message) => {
     setMessages(prev => [...prev, message]);
   }, []);
 
   const sendMessage = useCallback(async (text: string) => {
+    logger.debug('WebSocket sendMessage called', { text, isConnected });
     if (!isConnected) {
-      console.error('WebSocket not connected');
+      logger.websocketError('WebSocket not connected when trying to send message');
       return;
     }
 
@@ -27,12 +30,14 @@ export const useWebSocketChat = () => {
         sender: 'user',
         timestamp: new Date()
       };
+      logger.debug('Adding user message', { messageId: userMessage.id, textLength: text.length });
       addMessage(userMessage);
 
       // Send to backend
+      logger.debug('Sending message to WebSocket');
       websocketService.sendMessage(text);
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.websocketError('Failed to send message', error as Error, { text: text.substring(0, 100) });
       setConnectionError('Failed to send message');
     }
   }, [isConnected, addMessage]);
@@ -66,11 +71,18 @@ export const useWebSocketChat = () => {
     const connectWebSocket = async () => {
       try {
         setConnectionError(null);
+        
+        // Set up connection state listener
+        websocketService.onConnectionStateChange((state) => {
+          if (isMounted) {
+            setConnectionState(state);
+            setIsConnected(state === 'connected');
+          }
+        });
+        
         await websocketService.connect();
         
         if (!isMounted) return;
-
-        setIsConnected(true);
 
         // Set up event listeners
         websocketService.onEllensResponse((message) => {
@@ -140,20 +152,14 @@ export const useWebSocketChat = () => {
   }, [addMessage]);
 
   // Retry connection
-  const retryConnection = useCallback(() => {
+  const retryConnection = useCallback(async () => {
     setConnectionError(null);
-    websocketService.disconnect();
-    
-    // Reconnect after a short delay
-    setTimeout(async () => {
-      try {
-        await websocketService.connect();
-        setIsConnected(true);
-      } catch (error) {
-        console.error('Retry connection failed:', error);
-        setConnectionError('Failed to reconnect to server');
-      }
-    }, 1000);
+    try {
+      await websocketService.retry();
+    } catch (error) {
+      console.error('Retry connection failed:', error);
+      setConnectionError('Failed to reconnect to server');
+    }
   }, []);
 
   return {
@@ -162,6 +168,7 @@ export const useWebSocketChat = () => {
     ellensTypingMood,
     isConnected,
     connectionError,
+    connectionState,
     sendMessage,
     setUserTyping,
     retryConnection,

@@ -13,6 +13,7 @@ interface ChatInterfaceProps {
   ellensTypingMood?: string;
   isConnected?: boolean;
   connectionError?: string | null;
+  connectionState?: string;
   onRetryConnection?: () => void;
 }
 
@@ -25,12 +26,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   ellensTypingMood = 'chill',
   isConnected = true,
   connectionError,
+  connectionState,
   onRetryConnection
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   // const [isUserTyping, setIsUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { aiStatus, getStatusInfo } = useAIStatus();
+  const { getStatusInfo } = useAIStatus();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,7 +44,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Send button clicked!', { inputMessage: inputMessage.trim(), isConnected });
     if (inputMessage.trim()) {
+      console.log('📤 Sending message:', inputMessage.trim());
       onSendMessage(inputMessage.trim());
       setInputMessage('');
       // setIsUserTyping(false);
@@ -69,7 +73,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 </span>
               </h1>
               <div className="flex items-center justify-between mt-2">
-                <p className="text-sm text-apple-gray-600 truncate flex items-center">
+                <div className="text-sm text-apple-gray-600 truncate flex items-center">
                   {connectionError ? (
                     <span className="text-apple-red flex items-center">
                       ❌ Connection Error
@@ -82,25 +86,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </span>
                   ) : !isConnected ? (
                     <span className="text-apple-orange flex items-center">
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-apple-orange mr-2"></div>
-                      Connecting...
+                      <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-apple-orange mr-2 inline-block"></span>
+                      {connectionState === 'reconnecting' ? 'Reconnecting...' : 'Connecting...'}
                     </span>
                   ) : isEllensTyping ? (
                     <span className="text-apple-green flex items-center">
-                      <div className="flex space-x-1 mr-2">
-                        <div className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce"></div>
-                        <div className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                      </div>
+                      <span className="flex space-x-1 mr-2">
+                        <span className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce inline-block"></span>
+                        <span className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce inline-block" style={{animationDelay: '0.1s'}}></span>
+                        <span className="w-1.5 h-1.5 bg-apple-green rounded-full animate-bounce inline-block" style={{animationDelay: '0.2s'}}></span>
+                      </span>
                       Ellens is {ellensTypingMood}...
                     </span>
                   ) : (
                     <span className="text-apple-green flex items-center">
-                      <div className="w-2 h-2 bg-apple-green rounded-full mr-2"></div>
+                      <span className="w-2 h-2 bg-apple-green rounded-full mr-2 inline-block"></span>
                       Online • "Alleen me wietje en me henny"
                     </span>
                   )}
-                </p>
+                </div>
                 
                 {/* AI Status Indicator */}
                 {(() => {

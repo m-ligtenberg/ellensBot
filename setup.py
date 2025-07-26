@@ -1,17 +1,29 @@
 from setuptools import setup, find_packages
+from pathlib import Path
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+# Read README
+readme_path = Path(__file__).parent / "CLONEKING_README.md"
+if readme_path.exists():
+    with open(readme_path, "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+else:
+    long_description = "CloneKing - AI Persona Cloning Platform"
+
+# Read requirements (filter out comments and empty lines)
+with open("requirements.txt", "r", encoding="utf-8") as fh:
+    requirements = []
+    for line in fh:
+        line = line.strip()
+        if line and not line.startswith("#"):
+            requirements.append(line)
 
 setup(
-    name="young-ellens-desktop",
-    version="2.0.0",
-    author="Young Ellens Desktop Team",
-    author_email="contact@youngellens.dev",
-    description="Young Ellens AI Chatbot - Modern Desktop Application",
+    name="cloneking",
+    version="1.0.0",
+    author="CloneKing Team",
+    description="CloneKing - AI Persona Cloning Platform for creating, training, and managing AI personas",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/youngellens/desktop-app",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -23,30 +35,39 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Topic :: Communications :: Chat",
-        "Topic :: Desktop Environment",
+        "Programming Language :: Python :: 3.12",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Multimedia :: Sound/Audio :: Speech",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.8",
-    install_requires=[
-        "customtkinter>=5.2.0",
-        "pillow>=10.0.0",
-        "requests>=2.31.0",
-        "typing-extensions>=4.8.0",
-    ],
+    install_requires=requirements,
     extras_require={
         "dev": [
             "pytest>=7.0",
             "black>=23.0",
             "flake8>=6.0",
+            "mypy>=1.0",
         ],
+        "gpu": [
+            "torch[gpu]>=2.0.0",
+            "torchaudio[gpu]>=2.0.0",
+        ]
     },
     entry_points={
         "console_scripts": [
-            "young-ellens=main:main",
+            "cloneking=cloneking_main:main",
         ],
     },
     include_package_data=True,
     package_data={
-        "": ["*.txt", "*.md", "*.ico", "*.png"],
+        "": ["assets/*", "*.md", "*.txt"],
+        "src": ["**/*"],
+    },
+    keywords="ai persona chatbot voice cloning machine-learning nlp tts",
+    project_urls={
+        "Documentation": "https://github.com/cloneking/cloneking",
+        "Source": "https://github.com/cloneking/cloneking",
+        "Tracker": "https://github.com/cloneking/cloneking/issues",
     },
 )

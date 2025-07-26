@@ -80,6 +80,10 @@ class Config:
         except Exception as e:
             logger.error(f"Error saving config: {e}")
     
+    def save(self):
+        """Alias for save_config()"""
+        self.save_config()
+    
     def get(self, key: str, default=None):
         """Get configuration value using dot notation (e.g., 'appearance.theme')"""
         try:

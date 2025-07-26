@@ -8,7 +8,22 @@ from ..utils.config import config
 
 class ChatInterface(ctk.CTkFrame):
     def __init__(self, parent, on_send_message: Callable[[str], None], chatbot: Chatbot):
-        super().__init__(parent)
+        # Apple-like color scheme
+        self.colors = {
+            "background": "#FFFFFF",
+            "surface": "#F8F9FA", 
+            "message_user": "#007AFF",
+            "message_ai": "#F1F3F4",
+            "text_primary": "#1D1D1F",
+            "text_secondary": "#6E6E73",
+            "border": "#E8EAED"
+        }
+        
+        super().__init__(
+            parent,
+            fg_color=self.colors["background"],
+            corner_radius=0
+        )
         
         self.on_send_message = on_send_message
         self.chatbot = chatbot
@@ -34,9 +49,16 @@ class ChatInterface(ctk.CTkFrame):
         self._create_input_area()
     
     def _create_header(self):
-        """Create chat header"""
-        header_frame = ctk.CTkFrame(self, height=80, corner_radius=10)
-        header_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 5))
+        """Create chat header with Apple styling"""
+        header_frame = ctk.CTkFrame(
+            self, 
+            height=88,
+            corner_radius=12,
+            fg_color=self.colors["surface"],
+            border_width=1,
+            border_color=self.colors["border"]
+        )
+        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 16))
         header_frame.grid_columnconfigure(1, weight=1)
         header_frame.grid_propagate(False)
         
@@ -44,28 +66,29 @@ class ChatInterface(ctk.CTkFrame):
         avatar_label = ctk.CTkLabel(
             header_frame, 
             text="🎤", 
-            font=ctk.CTkFont(size=32)
+            font=ctk.CTkFont(size=36)
         )
-        avatar_label.grid(row=0, column=0, padx=20, pady=10)
+        avatar_label.grid(row=0, column=0, padx=24, pady=16)
         
-        # Title and status
+        # Title and status with Apple typography
         title_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
-        title_frame.grid(row=0, column=1, sticky="w", padx=10, pady=10)
+        title_frame.grid(row=0, column=1, sticky="w", padx=16, pady=16)
         
         title_label = ctk.CTkLabel(
             title_frame,
-            text="Young Ellens",
-            font=ctk.CTkFont(size=24, weight="bold")
+            text="CloneKing Assistant",
+            font=ctk.CTkFont(family="SF Pro Display", size=22, weight="bold"),
+            text_color=self.colors["text_primary"]
         )
         title_label.grid(row=0, column=0, sticky="w")
         
         status_label = ctk.CTkLabel(
             title_frame,
-            text="🟢 Online • AI Assistant",
-            font=ctk.CTkFont(size=14),
-            text_color=("gray60", "gray40")
+            text="🟢 Online • AI Persona",
+            font=ctk.CTkFont(family="SF Pro Text", size=14),
+            text_color=self.colors["text_secondary"]
         )
-        status_label.grid(row=1, column=0, sticky="w")
+        status_label.grid(row=1, column=0, sticky="w", pady=(4, 0))
     
     def _create_messages_area(self):
         """Create scrollable messages area"""
@@ -102,6 +125,20 @@ class ChatInterface(ctk.CTkFrame):
         )
         self.message_entry.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         
+        # Voice toggle button
+        self.voice_button = ctk.CTkButton(
+            input_container,
+            text="🔊",
+            width=50,
+            height=50,
+            corner_radius=8,
+            font=ctk.CTkFont(size=16),
+            command=self._toggle_voice,
+            fg_color="green" if config.get("voice.enabled", False) else "gray",
+            hover_color="darkgreen" if config.get("voice.enabled", False) else "darkgray"
+        )
+        self.voice_button.grid(row=0, column=1, padx=(0, 10))
+        
         self.send_button = ctk.CTkButton(
             input_container,
             text="Send",
@@ -111,7 +148,7 @@ class ChatInterface(ctk.CTkFrame):
             font=ctk.CTkFont(size=14, weight="bold"),
             command=self._handle_send
         )
-        self.send_button.grid(row=0, column=1)
+        self.send_button.grid(row=0, column=2)
         
         # Character counter
         self.char_label = ctk.CTkLabel(
@@ -144,6 +181,35 @@ class ChatInterface(ctk.CTkFrame):
         if not event.state & 0x4:  # Not Ctrl+Enter
             self._handle_send()
             return "break"  # Prevent newline
+    
+    def _toggle_voice(self):
+        """Toggle voice enabled/disabled"""
+        try:
+            current_voice = config.get("voice.enabled", False)
+            new_voice = not current_voice
+            
+            # Update button appearance
+            if new_voice:
+                self.voice_button.configure(
+                    text="🔊",
+                    fg_color="green",
+                    hover_color="darkgreen"
+                )
+            else:
+                self.voice_button.configure(
+                    text="🔇",
+                    fg_color="gray",
+                    hover_color="darkgray"
+                )
+            
+            # Update config
+            config.set("voice.enabled", new_voice)
+            
+            # Log change
+            logger.info(f"Voice {'enabled' if new_voice else 'disabled'}")
+            
+        except Exception as e:
+            logger.error(f"Error toggling voice: {e}")
     
     def _handle_send(self, event=None):
         """Handle sending message"""
